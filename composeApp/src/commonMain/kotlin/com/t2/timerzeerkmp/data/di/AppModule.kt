@@ -1,0 +1,19 @@
+package com.t2.timerzeerkmp.data.di
+
+import com.t2.timerzeerkmp.data.persistence.createTimerPersistence
+import com.t2.timerzeerkmp.data.repository.SettingsRepository
+import com.t2.timerzeerkmp.data.repository.TimerRepository
+import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
+import com.t2.timerzeerkmp.presentation.fullScreenTimer.FullScreenTimerViewModel
+import com.t2.timerzeerkmp.presentation.timerPreview.TimerPreviewViewModel
+import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.module
+
+val coreModule = module {
+    single<TimerPersistence> { createTimerPersistence() }
+    viewModelOf(::TimerPreviewViewModel)
+    viewModelOf(::FullScreenTimerViewModel)
+    singleOf(::SettingsRepository)
+    singleOf(::TimerRepository)
+}
