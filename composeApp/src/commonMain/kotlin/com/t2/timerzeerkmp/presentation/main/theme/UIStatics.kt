@@ -11,8 +11,8 @@ val endingAnimations = linkedMapOf(
     Res.string.ending_animation_Explosives to "files/firework.json",
     Res.string.ending_animation_fly_ribbons to "files/colorful.json",
 )
-
-val backgrounds = linkedMapOf(
+@Composable
+fun backgrounds() = linkedMapOf(
     Res.string.value_default to null,
     Res.string.background_theme_dark to null,
     Res.string.background_theme_galaxy to Galaxy,

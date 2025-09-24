@@ -88,7 +88,7 @@ fun TimerScreenRoot(
     val customGraphicIds = LocalCustomGraphicIds.current
 
     Box(modifier = Modifier.fillMaxSize()) {
-        backgrounds[customGraphicIds.backgroundId]?.invoke()
+        backgrounds()[customGraphicIds.backgroundId]?.invoke()
 
         Scaffold(
             modifier = Modifier
@@ -133,7 +133,7 @@ private fun UIOverlays(
                 title = Res.string.background_theme,
                 selected = customGraphicIds.backgroundId ?: DEFAULT_NAME,
                 leadingIcon = Res.drawable.property_1_image_02,
-                optionList = backgrounds.keys.toList(),
+                optionList = backgrounds().keys.toList(),
                 onDismiss = {
                     onDismiss()
                 }, onItemSelected = { backgroundId ->

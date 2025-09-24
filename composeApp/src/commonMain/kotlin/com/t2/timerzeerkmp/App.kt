@@ -38,26 +38,35 @@ private val liveActivityManager = getLiveActivityManager()
 fun App() {
     TimerzeerTheme {
         val settingsRepository: SettingsRepository = koinInject()
-        var isThemeDark by remember { mutableStateOf<Boolean?>(null) }
         var fontStyleKeyResource by remember { mutableStateOf<String?>(null) }
-        var currentThemeId by remember { mutableStateOf<StringResource?>(null) }
+        var currentThemeId by remember { mutableStateOf<String?>(null) }
         var endingAnimation by remember { mutableStateOf<StringResource?>(null) }
-        var isLoaded by remember { mutableStateOf(false) }
+        var isEndingAnimationLoaded by remember { mutableStateOf(false) }
+        var isFontLoaded by remember { mutableStateOf(false) }
+        var isBackgroundLoaded by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
-            fontStyleKeyResource = settingsRepository.getFontStyleKeResource()
-            currentThemeId =
-                backgrounds.keys.find { it.key == settingsRepository.getBackgroundTheme() }
-            isThemeDark = backgroundToIsDark[currentThemeId]
-            endingAnimation =
-                endingAnimations.keys.find { it.key == settingsRepository.getEndingAnimation() }
-            isLoaded = true
+                settingsRepository.getFontStyleKeResource().collect {
+                    fontStyleKeyResource = it
+                    //todo isFontLoaded = true
+                }
+                settingsRepository.getBackgroundTheme().collect {backgroundKey->
+                    currentThemeId = backgroundKey
+
+                    isBackgroundLoaded = true
+                }
+
+                settingsRepository.getEndingAnimation().collect {endingAnimationKey->
+                    endingAnimation =
+                        endingAnimations.keys.find { it.key == endingAnimationKey }
+                    isEndingAnimationLoaded = true
+                }
         }
-        SmoothStartUpAnimation(isLoaded) {
+        SmoothStartUpAnimation(true) {
             TimerzeerTheme(
-                darkTheme = isThemeDark ?: isSystemInDarkTheme(),
+                darkTheme = backgroundToIsDark[backgrounds().keys.find { it.key == currentThemeId }] ?: isSystemInDarkTheme(),
                 fontId = fontStyles().keys.find { it.key == fontStyleKeyResource },
-                backgroundId = currentThemeId,
+                backgroundId =  backgrounds().keys.find { it.key == currentThemeId },
                 endingAnimationId = endingAnimation
             ) {
                 AppNavHost()

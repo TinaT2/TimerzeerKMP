@@ -5,7 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.t2.timerzeerkmp.domain.persistence.SettingsPersistence
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.StringResource
 
 
@@ -34,15 +35,15 @@ class DataStoreSettingsPersistence(val dataStore: DataStore<Preferences>) : Sett
         }
     }
 
-    override suspend fun getEndingAnimation(): String? {
-        return dataStore.data.first()[SettingsPrefsKeys.ENDING_ANIMATION.value]
+    override suspend fun getEndingAnimation(): Flow<String?> {
+        return dataStore.data.map { it[SettingsPrefsKeys.ENDING_ANIMATION.value] }
     }
 
-    override suspend fun getBackgroundTheme(): String? {
-        return dataStore.data.first()[SettingsPrefsKeys.BACKGROUND.value]
+    override suspend fun getBackgroundTheme(): Flow<String?> {
+        return dataStore.data.map { it[SettingsPrefsKeys.BACKGROUND.value] }
     }
 
-    override suspend fun getFontStyleKeResource(): String? {
-        return dataStore.data.first()[SettingsPrefsKeys.FONT_STYLE.value]
+    override suspend fun getFontStyleKeResource(): Flow<String?> {
+        return dataStore.data.map { it[SettingsPrefsKeys.FONT_STYLE.value] }
     }
 }

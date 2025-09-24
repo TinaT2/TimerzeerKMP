@@ -62,7 +62,7 @@ fun TimerzeerTheme(
         else -> LightColorScheme
     }
 
-    val isCustomized = backgrounds[backgroundId] != null
+    val isCustomized = backgrounds()[backgroundId] != null
     val customColors = if (isCustomized) {
         CustomColors(
             rowBackground = TextSecondaryTransparent,

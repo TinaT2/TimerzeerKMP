@@ -1,5 +1,6 @@
 package com.t2.timerzeerkmp.domain.persistence
 
+import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.StringResource
 
 interface SettingsPersistence {
@@ -7,7 +8,7 @@ interface SettingsPersistence {
     suspend fun saveBackgroundTheme(nameId: StringResource)
     suspend fun saveFontStyle(nameId: StringResource)
 
-    suspend fun getEndingAnimation(): String?
-    suspend fun getBackgroundTheme(): String?
-    suspend fun getFontStyleKeResource(): String?
+    suspend fun getEndingAnimation(): Flow<String?>
+    suspend fun getBackgroundTheme(): Flow<String?>
+    suspend fun getFontStyleKeResource(): Flow<String?>
 }

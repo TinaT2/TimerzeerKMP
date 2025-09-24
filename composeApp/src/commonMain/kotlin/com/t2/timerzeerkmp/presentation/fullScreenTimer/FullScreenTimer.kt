@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -28,6 +27,10 @@ import com.t2.timerzeerkmp.data.mapper.toDisplayString
 import com.t2.timerzeerkmp.data.mapper.toTimeComponents
 import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.timer.TimerState
+import com.t2.timerzeerkmp.domain.util.LocalUtil
+import com.t2.timerzeerkmp.domain.util.shareText
+import com.t2.timerzeerkmp.presentation.fullScreenTimer.FullScreenTimerViewModel.Companion.COUNTDOWN_DONE_DELAY_MS
+import com.t2.timerzeerkmp.presentation.fullScreenTimer.components.LottieLoader
 import com.t2.timerzeerkmp.presentation.main.components.CaptionTextField
 import com.t2.timerzeerkmp.presentation.main.components.HeadlineMediumTextField
 import com.t2.timerzeerkmp.presentation.main.components.LightDarkPreviews
@@ -40,19 +43,39 @@ import com.t2.timerzeerkmp.presentation.main.theme.LocalCustomGraphicIds
 import com.t2.timerzeerkmp.presentation.main.theme.backgrounds
 import com.t2.timerzeerkmp.presentation.main.theme.endingAnimations
 import com.t2.timerzeerkmp.presentation.timerPreview.components.TimeSelector
-import com.t2.timerzeerkmp.domain.util.LocalUtil
-import com.t2.timerzeerkmp.domain.util.shareText
 import com.tina.timerzeer.core.presentation.theme.SizeS
 import com.tina.timerzeer.core.presentation.theme.SizeXL
-import com.t2.timerzeerkmp.presentation.fullScreenTimer.FullScreenTimerViewModel.Companion.COUNTDOWN_DONE_DELAY_MS
-import com.t2.timerzeerkmp.presentation.fullScreenTimer.components.LottieLoader
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import timerzeerkmp.composeapp.generated.resources.*
+import timerzeerkmp.composeapp.generated.resources.Res
+import timerzeerkmp.composeapp.generated.resources.days
+import timerzeerkmp.composeapp.generated.resources.hide_ui
+import timerzeerkmp.composeapp.generated.resources.hours
+import timerzeerkmp.composeapp.generated.resources.lock
+import timerzeerkmp.composeapp.generated.resources.minutes
+import timerzeerkmp.composeapp.generated.resources.my_timer_state
+import timerzeerkmp.composeapp.generated.resources.pause
+import timerzeerkmp.composeapp.generated.resources.play
+import timerzeerkmp.composeapp.generated.resources.powered_by
+import timerzeerkmp.composeapp.generated.resources.property_1_eye
+import timerzeerkmp.composeapp.generated.resources.property_1_eye_off
+import timerzeerkmp.composeapp.generated.resources.property_1_lock_01
+import timerzeerkmp.composeapp.generated.resources.property_1_lock_unlocked_01
+import timerzeerkmp.composeapp.generated.resources.property_1_pause_circle
+import timerzeerkmp.composeapp.generated.resources.property_1_play
+import timerzeerkmp.composeapp.generated.resources.property_1_share_06
+import timerzeerkmp.composeapp.generated.resources.property_1_stop
+import timerzeerkmp.composeapp.generated.resources.seconds
+import timerzeerkmp.composeapp.generated.resources.share
+import timerzeerkmp.composeapp.generated.resources.show_ui
+import timerzeerkmp.composeapp.generated.resources.stop
+import timerzeerkmp.composeapp.generated.resources.timezeer
+import timerzeerkmp.composeapp.generated.resources.titleIcon
+import timerzeerkmp.composeapp.generated.resources.value_default
 
 @Composable
 fun RootTimerFullScreen(
@@ -104,7 +127,7 @@ fun TimerStarted(
                 onTimerIntent(TimerFullScreenIntent.IconAppear)
             }) {
 
-        backgrounds[customGraphicIds.backgroundId]?.invoke()
+        backgrounds()[customGraphicIds.backgroundId]?.invoke()
 
         Scaffold(
             modifier = Modifier
