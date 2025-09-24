@@ -21,12 +21,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.t2.timerzeerkmp.data.persistence.DataStoreFields
+import com.t2.timerzeerkmp.data.persistence.SettingsPrefsKeys
+import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
 import com.tina.timerzeer.core.presentation.theme.SizeL
 import com.tina.timerzeer.core.presentation.theme.SizeXL
 import com.tina.timerzeer.core.presentation.theme.SizeXXL
 import com.tina.timerzeer.core.presentation.theme.SizeXXXL
-import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -39,7 +39,7 @@ fun DefaultBottomSheet(
     leadingIcon: DrawableResource,
     selected: StringResource,
     optionList: List<StringResource>,
-    customListStyle: DataStoreFields? = null,
+    settingsPrefsKeys: SettingsPrefsKeys? = null,
     onDismiss: () -> Unit,
     onItemSelected: (StringResource) -> Unit = {}
 ) {
@@ -74,11 +74,11 @@ fun DefaultBottomSheet(
                     DefaultStyleOption(
                         item,
                         color = colorScheme.secondary,
-                        customListStyle = customListStyle,
+                        settingsPrefsKeys = settingsPrefsKeys,
                         onStyleSelected = onItemSelected
                     )
                 } else {
-                    DefaultStyleOption(item, customListStyle, onStyleSelected = onItemSelected)
+                    DefaultStyleOption(item, settingsPrefsKeys, onStyleSelected = onItemSelected)
                 }
             }
 
@@ -101,11 +101,12 @@ private fun BottomSheetDivider() {
 @Composable
 private fun DefaultStyleOption(
     nameId: StringResource,
-    customListStyle: DataStoreFields?,
+    settingsPrefsKeys: SettingsPrefsKeys?,
     color: Color = colorScheme.onPrimary,
     onStyleSelected: (nameId: StringResource) -> Unit = {}
 ) {
-    val fontFamily = if (customListStyle == DataStoreFields.FONT_STYLE) fontStyles()[nameId] else null
+    val fontFamily =
+        if (settingsPrefsKeys == SettingsPrefsKeys.FONT_STYLE) fontStyles()[nameId] else null
     val style = fontFamily?.let {
         typography.bodyMedium.copy(fontFamily = fontFamily)
     } ?: typography.bodyMedium

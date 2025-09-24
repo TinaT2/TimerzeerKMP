@@ -3,6 +3,7 @@ package com.t2.timerzeerkmp.presentation.main.theme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.t2.timerzeerkmp.presentation.timerPreview.DEFAULT_NAME
 import org.jetbrains.compose.resources.StringResource
 import timerzeerkmp.composeapp.generated.resources.Res
 import timerzeerkmp.composeapp.generated.resources.value_default
@@ -40,6 +41,6 @@ val LocalCustomGraphicIds = staticCompositionLocalOf {
 
 val DefaultLocalCustomGraphicIds =  CustomGraphicIds(
     backgroundId = null,
-    endingAnimationId = endingAnimations.keys.first(),
-    fontId =  Res.string.value_default
+    endingAnimationId = DEFAULT_NAME,
+    fontId = DEFAULT_NAME
 )

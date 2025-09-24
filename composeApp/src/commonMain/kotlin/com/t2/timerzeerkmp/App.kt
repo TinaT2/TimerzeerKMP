@@ -1,41 +1,34 @@
 package com.t2.timerzeerkmp
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.t2.timerzeerkmp.app.Route
+import com.t2.timerzeerkmp.data.repository.SettingsRepository
 import com.t2.timerzeerkmp.data.repository.TimerRepository
 import com.t2.timerzeerkmp.domain.getLiveActivityManager
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.RootTimerFullScreen
+import com.t2.timerzeerkmp.presentation.main.components.SmoothStartUpAnimation
 import com.t2.timerzeerkmp.presentation.main.theme.TimerzeerTheme
+import com.t2.timerzeerkmp.presentation.main.theme.backgroundToIsDark
+import com.t2.timerzeerkmp.presentation.main.theme.backgrounds
+import com.t2.timerzeerkmp.presentation.main.theme.endingAnimations
+import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
 import com.t2.timerzeerkmp.presentation.timerPreview.TimerScreenRoot
-import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
-import timerzeerkmp.composeapp.generated.resources.Res
-import timerzeerkmp.composeapp.generated.resources.compose_multiplatform
 
 
 private val liveActivityManager = getLiveActivityManager()
@@ -44,8 +37,34 @@ private val liveActivityManager = getLiveActivityManager()
 @Preview
 fun App() {
     TimerzeerTheme {
+        val settingsRepository: SettingsRepository = koinInject()
+        var isThemeDark by remember { mutableStateOf<Boolean?>(null) }
+        var fontStyleKeyResource by remember { mutableStateOf<String?>(null) }
+        var currentThemeId by remember { mutableStateOf<StringResource?>(null) }
+        var endingAnimation by remember { mutableStateOf<StringResource?>(null) }
+        var isLoaded by remember { mutableStateOf(false) }
 
-        AppNavHost()
+        LaunchedEffect(Unit) {
+            fontStyleKeyResource = settingsRepository.getFontStyleKeResource()
+            currentThemeId =
+                backgrounds.keys.find { it.key == settingsRepository.getBackgroundTheme() }
+            isThemeDark = backgroundToIsDark[currentThemeId]
+            endingAnimation =
+                endingAnimations.keys.find { it.key == settingsRepository.getEndingAnimation() }
+            isLoaded = true
+        }
+        SmoothStartUpAnimation(isLoaded) {
+            TimerzeerTheme(
+                darkTheme = isThemeDark ?: isSystemInDarkTheme(),
+                fontId = fontStyles().keys.find { it.key == fontStyleKeyResource },
+                backgroundId = currentThemeId,
+                endingAnimationId = endingAnimation
+            ) {
+                AppNavHost()
+            }
+        }
+    }
+}
 
 
 //        var showContent by remember { mutableStateOf(false) }
@@ -81,8 +100,6 @@ fun App() {
 //                }
 //            }
 //        }
-    }
-}
 
 
 @Composable

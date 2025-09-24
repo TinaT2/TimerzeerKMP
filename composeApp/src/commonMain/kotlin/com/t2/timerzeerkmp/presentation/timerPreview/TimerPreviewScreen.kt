@@ -28,7 +28,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.t2.timerzeerkmp.data.persistence.DataStoreFields
+import com.t2.timerzeerkmp.data.mapper.toTimeComponents
+import com.t2.timerzeerkmp.data.persistence.SettingsPrefsKeys
 import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.util.currentTimeMillis
 import com.t2.timerzeerkmp.presentation.main.components.DefaultBottomSheet
@@ -42,24 +43,39 @@ import com.t2.timerzeerkmp.presentation.main.components.ThemedPreview
 import com.t2.timerzeerkmp.presentation.main.components.TimerInputField
 import com.t2.timerzeerkmp.presentation.main.theme.LocalCustomColors
 import com.t2.timerzeerkmp.presentation.main.theme.LocalCustomGraphicIds
+import com.t2.timerzeerkmp.presentation.main.theme.backgrounds
+import com.t2.timerzeerkmp.presentation.main.theme.endingAnimations
+import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
+import com.t2.timerzeerkmp.presentation.timerPreview.components.SegmentedTab
+import com.t2.timerzeerkmp.presentation.timerPreview.components.TimeSelector
 import com.tina.timerzeer.core.presentation.theme.SizeS
 import com.tina.timerzeer.core.presentation.theme.SizeXL
 import com.tina.timerzeer.core.presentation.theme.SizeXS
 import com.tina.timerzeer.core.presentation.theme.SizeXXXL
-import com.t2.timerzeerkmp.presentation.main.theme.backgrounds
-import com.t2.timerzeerkmp.presentation.main.theme.endingAnimations
-import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
-import com.t2.timerzeerkmp.data.mapper.toTimeComponents
-import com.t2.timerzeerkmp.presentation.timerPreview.components.SegmentedTab
-import com.t2.timerzeerkmp.presentation.timerPreview.components.TimeSelector
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import timerzeerkmp.composeapp.generated.resources.Res
-import timerzeerkmp.composeapp.generated.resources.*
-import kotlin.collections.get
+import timerzeerkmp.composeapp.generated.resources.background_theme
+import timerzeerkmp.composeapp.generated.resources.days
+import timerzeerkmp.composeapp.generated.resources.ending_animation
+import timerzeerkmp.composeapp.generated.resources.hours
+import timerzeerkmp.composeapp.generated.resources.minutes
+import timerzeerkmp.composeapp.generated.resources.property_1_calendar
+import timerzeerkmp.composeapp.generated.resources.property_1_chevron_right
+import timerzeerkmp.composeapp.generated.resources.property_1_clock_fast_forward
+import timerzeerkmp.composeapp.generated.resources.property_1_clock_stopwatch
+import timerzeerkmp.composeapp.generated.resources.property_1_flash
+import timerzeerkmp.composeapp.generated.resources.property_1_image_02
+import timerzeerkmp.composeapp.generated.resources.property_1_roller_brush
+import timerzeerkmp.composeapp.generated.resources.seconds
+import timerzeerkmp.composeapp.generated.resources.start
+import timerzeerkmp.composeapp.generated.resources.timer_style
+import timerzeerkmp.composeapp.generated.resources.timezeer
+import timerzeerkmp.composeapp.generated.resources.titleIcon
+import timerzeerkmp.composeapp.generated.resources.value_default
 
-
+val DEFAULT_NAME = Res.string.value_default
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreenRoot(
@@ -72,7 +88,7 @@ fun TimerScreenRoot(
     val customGraphicIds = LocalCustomGraphicIds.current
 
     Box(modifier = Modifier.fillMaxSize()) {
-        backgrounds()[customGraphicIds.backgroundId]?.invoke()
+        backgrounds[customGraphicIds.backgroundId]?.invoke()
 
         Scaffold(
             modifier = Modifier
@@ -115,9 +131,9 @@ private fun UIOverlays(
         UiOverlayIntent.BackgroundTheme -> {
             DefaultBottomSheet(
                 title = Res.string.background_theme,
-                selected = customGraphicIds.backgroundId ?: backgrounds().keys.first(),
+                selected = customGraphicIds.backgroundId ?: DEFAULT_NAME,
                 leadingIcon = Res.drawable.property_1_image_02,
-                optionList = backgrounds().keys.toList(),
+                optionList = backgrounds.keys.toList(),
                 onDismiss = {
                     onDismiss()
                 }, onItemSelected = { backgroundId ->
@@ -160,7 +176,7 @@ private fun UIOverlays(
                 selected = customGraphicIds.fontId,
                 leadingIcon = Res.drawable.property_1_roller_brush,
                 optionList = fontStyles().keys.toList(),
-                customListStyle = DataStoreFields.FONT_STYLE,
+                settingsPrefsKeys = SettingsPrefsKeys.FONT_STYLE,
                 onDismiss = {
                     onDismiss()
                 }, onItemSelected = {
@@ -289,18 +305,18 @@ private fun TimerScreen(
                         text = stringResource(customGraphicIds.fontId),
                         leadingIcon = Res.drawable.property_1_roller_brush,
                         trailingIcon = Res.drawable.property_1_chevron_right,
-                        enabled = customGraphicIds.fontId != fontStyles().keys.first()
+                        enabled = customGraphicIds.fontId != DEFAULT_NAME
                     ) {
                         onStyleChange()
                     }
                     Spacer(Modifier.height(SizeXS))
                     TextOptionButton(
                         text = stringResource(
-                            customGraphicIds.backgroundId ?: backgrounds().keys.first()
+                            customGraphicIds.backgroundId ?: DEFAULT_NAME
                         ),
                         leadingIcon = Res.drawable.property_1_image_02,
                         trailingIcon = Res.drawable.property_1_chevron_right,
-                        enabled = customGraphicIds.backgroundId != backgrounds().keys.first() && customGraphicIds.backgroundId != null
+                        enabled = customGraphicIds.backgroundId != DEFAULT_NAME && customGraphicIds.backgroundId != null
                     ) {
                         onBackgroundThemeChange()
                     }
@@ -311,7 +327,7 @@ private fun TimerScreen(
                             text = stringResource(customGraphicIds.endingAnimationId),
                             leadingIcon = Res.drawable.property_1_flash,
                             trailingIcon = Res.drawable.property_1_chevron_right,
-                            enabled = customGraphicIds.endingAnimationId != endingAnimations.keys.first()
+                            enabled = customGraphicIds.endingAnimationId != DEFAULT_NAME
                         ) {
                             onEndingAnimationChange()
                         }

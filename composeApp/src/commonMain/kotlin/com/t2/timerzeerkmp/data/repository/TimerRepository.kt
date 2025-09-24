@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.update
 class TimerRepository(
     private val persistence: TimerPersistence
 ) {
+    init {
+        startService()
+    }
     private val _timerState = MutableStateFlow(TimerState())
     val timerState: StateFlow<TimerState> = _timerState
 
@@ -25,9 +28,6 @@ class TimerRepository(
         val start = persistence.getStartEpochMillis() ?: return null
         val initial = persistence.getInitialSeconds() ?: return null
         return initial - ((currentTimeMillis() - start) / 1000)
-    }
-    init {
-        startService()
     }
 
 

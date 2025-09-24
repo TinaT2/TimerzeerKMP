@@ -14,10 +14,6 @@ object TimerPrefsKeys {
     val RUNNING = booleanPreferencesKey("timer_is_running")
 }
 
-enum class DataStoreFields{
-    ENDING_ANIMATION, BACKGROUND, FONT_STYLE
-}
-
 class DataStoreTimerPersistence(
     private val dataStore: DataStore<Preferences>
 ) : TimerPersistence {

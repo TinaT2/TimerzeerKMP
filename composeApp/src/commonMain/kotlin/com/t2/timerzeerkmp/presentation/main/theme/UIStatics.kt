@@ -12,8 +12,7 @@ val endingAnimations = linkedMapOf(
     Res.string.ending_animation_fly_ribbons to "files/colorful.json",
 )
 
-@Composable
-fun backgrounds() = linkedMapOf(
+val backgrounds = linkedMapOf(
     Res.string.value_default to null,
     Res.string.background_theme_dark to null,
     Res.string.background_theme_galaxy to Galaxy,

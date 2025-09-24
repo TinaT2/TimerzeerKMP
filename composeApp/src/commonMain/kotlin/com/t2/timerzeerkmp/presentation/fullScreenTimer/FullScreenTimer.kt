@@ -104,7 +104,7 @@ fun TimerStarted(
                 onTimerIntent(TimerFullScreenIntent.IconAppear)
             }) {
 
-        backgrounds()[customGraphicIds.backgroundId]?.invoke()
+        backgrounds[customGraphicIds.backgroundId]?.invoke()
 
         Scaffold(
             modifier = Modifier
