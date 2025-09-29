@@ -17,7 +17,6 @@ import androidx.navigation.compose.rememberNavController
 import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.data.repository.SettingsRepository
 import com.t2.timerzeerkmp.data.repository.TimerRepository
-import com.t2.timerzeerkmp.domain.getLiveActivityManager
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.RootTimerFullScreen
 import com.t2.timerzeerkmp.presentation.main.components.SmoothStartUpAnimation
 import com.t2.timerzeerkmp.presentation.main.theme.TimerzeerTheme
@@ -30,9 +29,6 @@ import kotlinx.coroutines.flow.combine
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
-
-
-private val liveActivityManager = getLiveActivityManager()
 
 @Composable
 @Preview
@@ -72,42 +68,6 @@ fun App() {
         }
     }
 }
-
-
-//        var showContent by remember { mutableStateOf(false) }
-//        Column(
-//            modifier = Modifier
-//                .background(MaterialTheme.colorScheme.primaryContainer)
-//                .safeContentPadding()
-//                .fillMaxSize(),
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//        ) {
-//            Button(onClick = { showContent = !showContent }) {
-//                Text("Click me!")
-//            }
-//            AnimatedVisibility(showContent) {
-//                val greeting = remember { Greeting().greet() }
-//                Column(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                ) {
-//                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-//                    Text("Compose: $greeting")
-//                    Button({
-//                        liveActivityManager.start(10)
-//                    }) {
-//                        Text("Start")
-//                    }
-//
-//                    Button({
-//                        liveActivityManager.stop()
-//                    }) {
-//                        Text("Stop")
-//                    }
-//                }
-//            }
-//        }
-
 
 @Composable
 fun AppNavHost() {

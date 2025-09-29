@@ -1,108 +1,100 @@
 package com.t2.timerzeerkmp.data.repository
 
+import com.t2.timerzeerkmp.domain.LiveActivityManager
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
+import com.t2.timerzeerkmp.domain.timer.TimerIntent
 import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.timer.TimerState
 import com.t2.timerzeerkmp.domain.util.currentTimeMillis
-import com.t2.timerzeerkmp.presentation.fullScreenTimer.TimerIntent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 class TimerRepository(
-    private val persistence: TimerPersistence
+    private val persistence: TimerPersistence,
+    private val liveActivityManager: LiveActivityManager
 ) {
-    init {
-        startService()
-    }
     private val _timerState = MutableStateFlow(TimerState())
     val timerState: StateFlow<TimerState> = _timerState
 
-    suspend fun startTimer(initial: Long) {
-        persistence.saveInitialSeconds(initial)
-        persistence.saveStartEpochMillis(currentTimeMillis())
-        persistence.saveIsRunning(true)
-    }
+    private var timerJob: Job? = null
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    suspend fun restoreTimer(): Long? {
-        val start = persistence.getStartEpochMillis() ?: return null
-        val initial = persistence.getInitialSeconds() ?: return null
-        return initial - ((currentTimeMillis() - start) / 1000)
-    }
-
-
-
-    fun startService() {
-//        val intent = Intent(application, TimerService::class.java)
-//        ContextCompat.startForegroundService(application, intent)
-    }
-
-    fun update(seconds: Long) {
-        if (timerState.value.mode == TimerMode.COUNTDOWN && seconds == 0L) {
-            _timerState.update { it.copy(elapsedTime = seconds, isCountDownDone = true) }
-            onTimerIntent(TimerIntent.Stop)
-        } else
-            _timerState.update { it.copy(elapsedTime = seconds) }
-    }
-
-    fun update(mode: TimerMode, title: String, initialTime: Long?) {
-        _timerState.update {
-            it.copy(mode = mode, title = title, initialTime = initialTime)
+    fun onTimerIntent(intent: TimerIntent?){
+        when (intent) {
+            is TimerIntent.Start -> {
+                startTimer(intent.initialMilliSeconds)
+            }
+            TimerIntent.Pause -> pauseTimer()
+            TimerIntent.Resume -> resumeTimer()
+            TimerIntent.Stop -> stopTimer()
+            else->{}
         }
     }
 
-    fun reset() {
-        _timerState.update { it.copy(elapsedTime = 0L) }
+    private fun startTimer(initial: Long) {
+        scope.launch {
+            persistence.saveInitialSeconds(initial)
+            persistence.saveStartEpochMillis(currentTimeMillis())
+            persistence.saveIsRunning(true)
+        }
+
+        _timerState.update {
+            it.copy(isRunning = true, elapsedTime = initial * 1000)
+        }
+
+        // Start ticking
+        startTicking()
+
+        // Notify platform
+        liveActivityManager.start(initial)
     }
 
+    private fun pauseTimer() {
+        timerJob?.cancel()
+        _timerState.update { it.copy(isRunning = false) }
+        liveActivityManager.pause()
+    }
 
-    fun onTimerIntent(intent: TimerIntent?) {
-        when (intent) {
-            TimerIntent.Start -> {
-                if (_timerState.value.isRunning) return
-                _timerState.update {
-                    it.copy(
-                        isRunning = true,
-                        elapsedTime = if (_timerState.value.mode == TimerMode.COUNTDOWN) _timerState.value.initialTime
-                            ?: 0L else 0L,
-                        isCountDownDone = false
-                    )
+    private fun resumeTimer() {
+        if (_timerState.value.isRunning) return
+        _timerState.update { it.copy(isRunning = true) }
+        startTicking()
+        liveActivityManager.resume()
+    }
+
+    private fun stopTimer() {
+        timerJob?.cancel()
+        timerJob = null
+        _timerState.update { it.copy(isRunning = false, elapsedTime = 0L) }
+        liveActivityManager.stop()
+    }
+
+    private fun startTicking() {
+        if (timerJob != null) return
+
+        var elapsed = _timerState.value.elapsedTime
+
+        timerJob = scope.launch {
+            while (isActive && _timerState.value.isRunning) {
+                if (_timerState.value.mode == TimerMode.STOPWATCH) {
+                    elapsed += 1000
+                } else {
+                    elapsed -= 1000
                 }
-//todo                val intent = Intent(application, TimerService::class.java)
-//                intent.apply {
-//                    action = TimerForegroundActions.ACTION_START.name
-//                }
-//
-//                application.startService(intent)
-            }
 
-            TimerIntent.Pause -> {
-//                val intent = Intent(application, TimerService::class.java).apply {
-//                    action = TimerForegroundActions.ACTION_PAUSE.name
-//                }
-//                application.startService(intent)
-                _timerState.update { it.copy(isRunning = false) }
-            }
+                _timerState.update { it.copy(elapsedTime = elapsed) }
 
-            TimerIntent.Resume -> {
-                if (!_timerState.value.isRunning) {
-                    _timerState.update { it.copy(isRunning = true) }
-//                    val intent = Intent(application, TimerService::class.java).apply {
-//                        action = TimerForegroundActions.ACTION_RESUME.name
-//                    }
-//                    ContextCompat.startForegroundService(application, intent)
-                }
+                delay(1.seconds)
             }
-
-            TimerIntent.Stop -> {
-//                val intent = Intent(application, TimerService::class.java).apply {
-//                    action = TimerForegroundActions.ACTION_STOP.name
-//                }
-//                application.startService(intent)
-                _timerState.update { it.copy(isRunning = false) }
-            }
-
-            null -> {}
         }
     }
 }

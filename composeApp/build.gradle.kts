@@ -32,6 +32,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.androidx.datastore.preferences)
+            implementation(libs.androidx.lifecycle.service)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

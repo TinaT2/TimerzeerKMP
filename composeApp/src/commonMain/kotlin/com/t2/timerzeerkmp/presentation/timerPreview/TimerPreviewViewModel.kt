@@ -107,11 +107,11 @@ class TimerPreviewViewModel(
 
             TimerPreviewIntent.OnTimerStarted -> {
                 timerPreviewState.value.apply {
-                    timerRepository.update(
-                        mode = mode,
-                        title = getTitle(),
-                        initialTime = countDownInitTime
-                    )
+// todo                   timerRepository.update(
+//                        mode = mode,
+//                        title = getTitle(),
+//                        initialTime = countDownInitTime
+//                    )
                 }
 
             }

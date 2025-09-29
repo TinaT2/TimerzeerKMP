@@ -37,7 +37,7 @@ class FullScreenTimerViewModel(
 
     fun onTimerIntent(intent: TimerFullScreenIntent) {
         when (intent) {
-            TimerFullScreenIntent.Start,
+            is TimerFullScreenIntent.Start,
             TimerFullScreenIntent.Pause,
             TimerFullScreenIntent.Resume,
             TimerFullScreenIntent.Stop -> {

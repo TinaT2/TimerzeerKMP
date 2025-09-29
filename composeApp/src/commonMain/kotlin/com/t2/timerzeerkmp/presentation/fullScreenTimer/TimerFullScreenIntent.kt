@@ -1,7 +1,9 @@
 package com.t2.timerzeerkmp.presentation.fullScreenTimer
 
+import com.t2.timerzeerkmp.domain.timer.TimerIntent
+
 sealed interface TimerFullScreenIntent {
-    data object Start : TimerFullScreenIntent
+    data class Start(val initialMilliSeconds: Long) : TimerFullScreenIntent
     data object Pause : TimerFullScreenIntent
     data object Resume : TimerFullScreenIntent
     data object Stop : TimerFullScreenIntent
@@ -10,15 +12,12 @@ sealed interface TimerFullScreenIntent {
     data object IconAppear : TimerFullScreenIntent
 }
 
-sealed interface TimerIntent {
-    data object Start : TimerIntent
-    data object Pause : TimerIntent
-    data object Resume : TimerIntent
-    data object Stop : TimerIntent
-}
 
 fun TimerFullScreenIntent.toTimerIntent(): TimerIntent? = when (this) {
-    TimerFullScreenIntent.Start -> TimerIntent.Start
+    is TimerFullScreenIntent.Start -> {
+        val initialMs = this.initialMilliSeconds
+        TimerIntent.Start(initialMs)
+    }
     TimerFullScreenIntent.Pause -> TimerIntent.Pause
     TimerFullScreenIntent.Resume -> TimerIntent.Resume
     TimerFullScreenIntent.Stop -> TimerIntent.Stop
