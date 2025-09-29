@@ -26,6 +26,7 @@ import com.t2.timerzeerkmp.presentation.main.theme.backgrounds
 import com.t2.timerzeerkmp.presentation.main.theme.endingAnimations
 import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
 import com.t2.timerzeerkmp.presentation.timerPreview.TimerScreenRoot
+import kotlinx.coroutines.flow.combine
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -41,32 +42,29 @@ fun App() {
         var fontStyleKeyResource by remember { mutableStateOf<String?>(null) }
         var currentThemeId by remember { mutableStateOf<String?>(null) }
         var endingAnimation by remember { mutableStateOf<StringResource?>(null) }
-        var isEndingAnimationLoaded by remember { mutableStateOf(false) }
-        var isFontLoaded by remember { mutableStateOf(false) }
-        var isBackgroundLoaded by remember { mutableStateOf(false) }
+        var isLoaded by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
-                settingsRepository.getFontStyleKeResource().collect {
-                    fontStyleKeyResource = it
-                    //todo isFontLoaded = true
-                }
-                settingsRepository.getBackgroundTheme().collect {backgroundKey->
-                    currentThemeId = backgroundKey
-
-                    isBackgroundLoaded = true
-                }
-
-                settingsRepository.getEndingAnimation().collect {endingAnimationKey->
-                    endingAnimation =
-                        endingAnimations.keys.find { it.key == endingAnimationKey }
-                    isEndingAnimationLoaded = true
-                }
+            combine(
+                settingsRepository.getFontStyleKeResource(),
+                settingsRepository.getBackgroundTheme(),
+                settingsRepository.getEndingAnimation()
+            ) { font, background, animation ->
+                Triple(font, background, animation)
+            }.collect { (font, background, animation) ->
+                fontStyleKeyResource = font
+                currentThemeId = background
+                endingAnimation = endingAnimations.keys.find { it.key == animation }
+                isLoaded = true
+            }
         }
-        SmoothStartUpAnimation(true) {
+        //todo isLoaded
+        SmoothStartUpAnimation(isLoaded) {
             TimerzeerTheme(
-                darkTheme = backgroundToIsDark[backgrounds().keys.find { it.key == currentThemeId }] ?: isSystemInDarkTheme(),
+                darkTheme = backgroundToIsDark[backgrounds().keys.find { it.key == currentThemeId }]
+                    ?: isSystemInDarkTheme(),
                 fontId = fontStyles().keys.find { it.key == fontStyleKeyResource },
-                backgroundId =  backgrounds().keys.find { it.key == currentThemeId },
+                backgroundId = backgrounds().keys.find { it.key == currentThemeId },
                 endingAnimationId = endingAnimation
             ) {
                 AppNavHost()
