@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TimerZeerKMP</string>
+    <string name="app_name">TimerZeer</string>
     <string name="no_timer_running">No Timer Running</string>
     <string name="notification_permission_denied">Allow notifications to keep your timer visible in the status bar.</string>
 </resources>

@@ -80,7 +80,7 @@ val DEFAULT_NAME = Res.string.value_default
 @Composable
 fun TimerScreenRoot(
     viewModel: TimerPreviewViewModel = koinViewModel(),
-    onTimerStarted: () -> Unit = {}
+    onTimerStarted: (mode: TimerMode,title:String,initTime:Long) -> Unit
 ) {
     val timerPreviewState by viewModel.timerPreviewState.collectAsStateWithLifecycle()
     var uiOverlayIntent: UiOverlayIntent by remember { mutableStateOf(UiOverlayIntent.None) }
@@ -100,8 +100,7 @@ fun TimerScreenRoot(
                 paddingValues,
                 timerPreviewState = timerPreviewState,
                 onTimerStarted = {
-                    viewModel.onUserAction(TimerPreviewIntent.OnTimerStarted)
-                    onTimerStarted()
+                    onTimerStarted(timerPreviewState.mode,timerPreviewState.getTitle(),timerPreviewState.getInitTime())
                 },
                 onUserActionIntent = { intent ->
                     viewModel.onUserAction(intent)
@@ -254,8 +253,7 @@ private fun TimerScreen(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        val time =
-                            if (timerPreviewState.mode == TimerMode.STOPWATCH) 0L.toTimeComponents() else timerPreviewState.countDownInitTime.toTimeComponents()
+                        val time = timerPreviewState.getInitTime().toTimeComponents()
                         SmoothFieldFadeAnimatedVisibility(time.days > 0) {
                             TimeSelector(
                                 time.days,

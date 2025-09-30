@@ -1,9 +1,10 @@
 package com.t2.timerzeerkmp.presentation.fullScreenTimer
 
+import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.domain.timer.TimerIntent
 
 sealed interface TimerFullScreenIntent {
-    data class Start(val initialMilliSeconds: Long) : TimerFullScreenIntent
+    data class Start(val timerInit: Route.TimerFullScreen) : TimerFullScreenIntent
     data object Pause : TimerFullScreenIntent
     data object Resume : TimerFullScreenIntent
     data object Stop : TimerFullScreenIntent
@@ -15,7 +16,7 @@ sealed interface TimerFullScreenIntent {
 
 fun TimerFullScreenIntent.toTimerIntent(): TimerIntent? = when (this) {
     is TimerFullScreenIntent.Start -> {
-        val initialMs = this.initialMilliSeconds
+        val initialMs = this.timerInit
         TimerIntent.Start(initialMs)
     }
     TimerFullScreenIntent.Pause -> TimerIntent.Pause

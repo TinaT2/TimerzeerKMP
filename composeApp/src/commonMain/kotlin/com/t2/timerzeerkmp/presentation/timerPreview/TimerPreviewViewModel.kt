@@ -104,17 +104,6 @@ class TimerPreviewViewModel(
                     settingsRepository.saveFontStyle(action.styleId)
                 }
             }
-
-            TimerPreviewIntent.OnTimerStarted -> {
-                timerPreviewState.value.apply {
-// todo                   timerRepository.update(
-//                        mode = mode,
-//                        title = getTitle(),
-//                        initialTime = countDownInitTime
-//                    )
-                }
-
-            }
         }
     }
 

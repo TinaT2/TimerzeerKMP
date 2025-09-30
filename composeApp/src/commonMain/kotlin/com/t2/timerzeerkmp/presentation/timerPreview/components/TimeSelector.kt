@@ -36,6 +36,7 @@ import com.tina.timerzeer.core.presentation.theme.SizeXXXL
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import timerzeerkmp.composeapp.generated.resources.Res
+import timerzeerkmp.composeapp.generated.resources.property_1_chevron_down
 import timerzeerkmp.composeapp.generated.resources.property_1_chevron_up
 
 @Composable
@@ -84,7 +85,7 @@ fun TimeSelector(
         }
         Box {
             ThemedArrowIcon(
-                Res.drawable.property_1_chevron_up,
+                Res.drawable.property_1_chevron_down,
                 visible = selectable
             ) { onDecrease() }
             Spacer(modifier = Modifier.height(spaceBottom))

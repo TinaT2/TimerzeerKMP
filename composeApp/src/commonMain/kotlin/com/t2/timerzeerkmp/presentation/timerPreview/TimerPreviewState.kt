@@ -8,8 +8,8 @@ import timerzeerkmp.composeapp.generated.resources.stopwatch_title
 
 
 data class TimerPreviewState(
-    val stopwatchTitle: String = "",
-    val countdownTitle: String = "",
+    private val stopwatchTitle: String = "",
+    private val countdownTitle: String = "",
     val countDownInitTime: Long = 0L,
     val mode: TimerMode = TimerMode.STOPWATCH,
     val errorMessage: TimerZeerError? = null
@@ -23,4 +23,7 @@ data class TimerPreviewState(
         if (mode == TimerMode.STOPWATCH) TimerPreviewIntent.OnStopwatchTitleChange(title) else TimerPreviewIntent.OnCountDownTitleChange(
             title
         )
+
+    fun getInitTime() = if (mode == TimerMode.STOPWATCH) 0L else countDownInitTime
+
 }

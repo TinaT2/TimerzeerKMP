@@ -20,7 +20,6 @@ sealed interface TimerPreviewIntent {
     data class SetEndingAnimation(val endingAnimation: StringResource): TimerPreviewIntent
     data class SetBackground(val backgroundId: StringResource): TimerPreviewIntent
     data class SetStyle(val styleId: StringResource): TimerPreviewIntent
-    data object OnTimerStarted: TimerPreviewIntent
 }
 
 sealed interface UiOverlayIntent {

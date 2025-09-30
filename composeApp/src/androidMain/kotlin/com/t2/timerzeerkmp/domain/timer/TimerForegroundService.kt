@@ -26,7 +26,7 @@ class TimerService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        startForeground(NOTIFICATION_ID, buildNotification(0L))
+        startForeground(NOTIFICATION_ID, buildNotification(null))
         observeTimerState()
     }
 
@@ -42,7 +42,7 @@ class TimerService : LifecycleService() {
         }
     }
 
-    private fun buildNotification(elapsed: Long): Notification {
+    private fun buildNotification(elapsed: Long?): Notification {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -50,12 +50,14 @@ class TimerService : LifecycleService() {
             this, 0, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val contentText = "${timerRepository.timerState.value.mode.name.lowercase()}: ${
-            elapsed.toTimeComponents().toDisplayString()
-        }"
+        val contentText = if (elapsed != null && elapsed != -1L) {
+            "${timerRepository.timerState.value.mode.name.lowercase()}: ${
+                elapsed.toTimeComponents().toDisplayString()
+            }"
+        } else getString(R.string.no_timer_running)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.no_timer_running))
+            .setContentTitle(getString(R.string.app_name))
             .setContentText(contentText)
             .setSmallIcon(R.drawable.property_clock_stopwatch)
             .setContentIntent(pendingIntent)

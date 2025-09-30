@@ -1,5 +1,6 @@
 package com.t2.timerzeerkmp.data.repository
 
+import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.domain.LiveActivityManager
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.domain.timer.TimerIntent
@@ -28,34 +29,38 @@ class TimerRepository(
     private var timerJob: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    fun onTimerIntent(intent: TimerIntent?){
+    fun onTimerIntent(intent: TimerIntent?) {
         when (intent) {
             is TimerIntent.Start -> {
-                startTimer(intent.initialMilliSeconds)
+                startTimer(intent.timerInit)
             }
+
             TimerIntent.Pause -> pauseTimer()
             TimerIntent.Resume -> resumeTimer()
             TimerIntent.Stop -> stopTimer()
-            else->{}
+            else -> {}
         }
     }
 
-    private fun startTimer(initial: Long) {
+    private fun startTimer(timerInit: Route.TimerFullScreen) {
         scope.launch {
-            persistence.saveInitialSeconds(initial)
+            persistence.saveInitialMilliSeconds(timerInit.initTime)
             persistence.saveStartEpochMillis(currentTimeMillis())
             persistence.saveIsRunning(true)
         }
 
         _timerState.update {
-            it.copy(isRunning = true, elapsedTime = initial * 1000)
+            it.copy(
+                isRunning = true,
+                elapsedTime = timerInit.initTime,
+                mode = timerInit.mode,
+                title = timerInit.title
+            )
         }
 
-        // Start ticking
         startTicking()
 
-        // Notify platform
-        liveActivityManager.start(initial)
+        liveActivityManager.start(timerInit.initTime)
     }
 
     private fun pauseTimer() {
@@ -74,7 +79,7 @@ class TimerRepository(
     private fun stopTimer() {
         timerJob?.cancel()
         timerJob = null
-        _timerState.update { it.copy(isRunning = false, elapsedTime = 0L) }
+        _timerState.update { it.copy(isRunning = false, elapsedTime = -1L) }
         liveActivityManager.stop()
     }
 

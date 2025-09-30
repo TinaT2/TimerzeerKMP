@@ -22,7 +22,7 @@ class DataStoreTimerPersistence(
         dataStore.edit { prefs -> prefs[TimerPrefsKeys.START] = ms }
     }
 
-    override suspend fun saveInitialSeconds(seconds: Long) {
+    override suspend fun saveInitialMilliSeconds(seconds: Long) {
         dataStore.edit { prefs -> prefs[TimerPrefsKeys.INITIAL] = seconds }
     }
 
@@ -39,7 +39,7 @@ class DataStoreTimerPersistence(
     override suspend fun getStartEpochMillis(): Long? =
         dataStore.data.first()[TimerPrefsKeys.START]
 
-    override suspend fun getInitialSeconds(): Long? =
+    override suspend fun getInitialMilliSeconds(): Long? =
         dataStore.data.first()[TimerPrefsKeys.INITIAL]
 
     override suspend fun getIsRunning(): Boolean? =

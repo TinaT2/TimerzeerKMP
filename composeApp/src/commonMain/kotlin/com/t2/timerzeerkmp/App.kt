@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.data.repository.SettingsRepository
 import com.t2.timerzeerkmp.data.repository.TimerRepository
@@ -91,16 +92,16 @@ fun AppNavHost() {
                             Route.TimerFullScreen
                         )
                 }
-                TimerScreenRoot {
-                    navController.navigate(Route.TimerFullScreen)
+                TimerScreenRoot { mode, title, initTime ->
+                    navController.navigate(Route.TimerFullScreen(mode, title, initTime))
                 }
             }
             composable<Route.TimerFullScreen>(
                 enterTransition = { fadeIn(animationSpec = tween(durationMillis = (1000))) },
                 exitTransition = { fadeOut(animationSpec = tween(durationMillis = (1000))) }
-            ) {
-
-                RootTimerFullScreen {
+            ) { backStackEntry ->
+                val timerInitiate: Route.TimerFullScreen = backStackEntry.toRoute()
+                RootTimerFullScreen(timerInitiate) {
                     navController.navigateUp()
                 }
             }

@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.data.mapper.toDisplayString
 import com.t2.timerzeerkmp.data.mapper.toTimeComponents
 import com.t2.timerzeerkmp.domain.timer.TimerMode
@@ -79,6 +80,7 @@ import timerzeerkmp.composeapp.generated.resources.value_default
 
 @Composable
 fun RootTimerFullScreen(
+    timerInitiate: Route.TimerFullScreen,
     viewModel: FullScreenTimerViewModel = koinViewModel(),
     onNavigateBack: () -> Unit
 ) {
@@ -98,9 +100,7 @@ fun RootTimerFullScreen(
 //    }
 
 
-
-    //todo initial sec
-    LaunchedEffect(Unit) { viewModel.onTimerIntent(TimerFullScreenIntent.Start(0)) }
+    LaunchedEffect(Unit) { viewModel.onTimerIntent(TimerFullScreenIntent.Start(timerInitiate)) }
     TimerStarted(timerState.value, onTimerIntent = {
         viewModel.onTimerIntent(it)
     }, onNavigateBack = onNavigateBack)
