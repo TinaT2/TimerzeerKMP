@@ -47,6 +47,8 @@ class TimerRepository(
             persistence.saveInitialMilliSeconds(timerInit.initTime)
             persistence.saveStartEpochMillis(currentTimeMillis())
             persistence.saveIsRunning(true)
+            delay(1.seconds)
+            startTicking()
         }
 
         _timerState.update {
@@ -54,11 +56,10 @@ class TimerRepository(
                 isRunning = true,
                 elapsedTime = timerInit.initTime,
                 mode = timerInit.mode,
-                title = timerInit.title
+                title = timerInit.title,
+                isCountDownDone = false
             )
         }
-
-        startTicking()
 
         liveActivityManager.start(timerInit.initTime)
     }
@@ -84,8 +85,6 @@ class TimerRepository(
     }
 
     private fun startTicking() {
-        if (timerJob != null) return
-
         var elapsed = _timerState.value.elapsedTime
 
         timerJob = scope.launch {
@@ -96,7 +95,16 @@ class TimerRepository(
                     elapsed -= 1000
                 }
 
-                _timerState.update { it.copy(elapsedTime = elapsed) }
+                _timerState.update {
+                    it.copy(
+                        elapsedTime = elapsed.coerceAtLeast(0), // prevent negatives
+                        isCountDownDone = (timerState.value.mode == TimerMode.COUNTDOWN && elapsed <= 0)
+                    )
+                }
+
+                if (timerState.value.mode == TimerMode.COUNTDOWN && elapsed <= 0) {
+                    onTimerIntent(TimerIntent.Stop)
+                }
 
                 delay(1.seconds)
             }
