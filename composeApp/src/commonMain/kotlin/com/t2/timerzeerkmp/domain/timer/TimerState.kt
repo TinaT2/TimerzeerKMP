@@ -1,5 +1,6 @@
 package com.t2.timerzeerkmp.domain.timer
 
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import timerzeerkmp.composeapp.generated.resources.Res
 import timerzeerkmp.composeapp.generated.resources.countdown
@@ -14,7 +15,7 @@ data class TimerState(
     val isCountDownDone: Boolean = false,
     val errorMessage: String? = null // TimerZeerError can be simplified to string in shared
 )
-
+@Serializable
 enum class TimerMode(val value: StringResource) {
     STOPWATCH(Res.string.stopwatch), COUNTDOWN(Res.string.countdown)
 }

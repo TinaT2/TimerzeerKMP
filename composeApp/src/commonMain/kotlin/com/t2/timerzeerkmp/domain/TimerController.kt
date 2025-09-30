@@ -1,10 +1,10 @@
 package com.t2.timerzeerkmp.domain
 
-interface LiveActivityManager {
+interface TimerController {
     fun start(durationInSeconds: Long)
     fun pause()
     fun resume()
     fun stop()
 }
 
-expect fun getLiveActivityManager(): LiveActivityManager
+expect fun getTimerController(): TimerController

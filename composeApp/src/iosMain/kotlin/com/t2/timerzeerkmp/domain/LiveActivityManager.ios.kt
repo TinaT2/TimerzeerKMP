@@ -1,5 +1,5 @@
 package com.t2.timerzeerkmp.domain
 
-actual fun getLiveActivityManager(): LiveActivityManager {
+actual fun getTimerController(): TimerController {
     return IosLiveActivityManager.manager
 }

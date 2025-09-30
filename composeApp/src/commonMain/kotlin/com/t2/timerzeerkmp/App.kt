@@ -93,7 +93,7 @@ fun AppNavHost() {
                         )
                 }
                 TimerScreenRoot { mode, title, initTime ->
-                    navController.navigate(Route.TimerFullScreen(mode, title, initTime))
+                    navController.navigate(Route.TimerFullScreen(mode.name, title, initTime))
                 }
             }
             composable<Route.TimerFullScreen>(

@@ -5,7 +5,7 @@ import ComposeApp
 struct iOSApp: App {
     init() {
         InitKoinKt.startKoinForiOS()
-        IosLiveActivityManager.shared.manager = LiveActivityManagerImpl()
+        IosLiveActivityManager.shared.manager = LiveActivityManager()
        }
     var body: some Scene {
         WindowGroup {

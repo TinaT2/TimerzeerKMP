@@ -8,8 +8,8 @@ import com.t2.timerzeerkmp.domain.timer.TimerService
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-actual fun getLiveActivityManager(): LiveActivityManager =
-    object : LiveActivityManager, KoinComponent {
+actual fun getTimerController(): TimerController =
+    object : TimerController, KoinComponent {
         val context: Context by inject<Context>()
 
         override fun start(durationInSeconds: Long) {

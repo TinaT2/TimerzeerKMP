@@ -4,6 +4,7 @@ import com.t2.timerzeerkmp.data.persistence.createSettingsPersistence
 import com.t2.timerzeerkmp.data.persistence.createTimerPersistence
 import com.t2.timerzeerkmp.data.repository.SettingsRepository
 import com.t2.timerzeerkmp.data.repository.TimerRepository
+import com.t2.timerzeerkmp.domain.getTimerController
 import com.t2.timerzeerkmp.domain.persistence.SettingsPersistence
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.FullScreenTimerViewModel
@@ -19,4 +20,5 @@ val coreModule = module {
     viewModelOf(::FullScreenTimerViewModel)
     singleOf(::SettingsRepository)
     singleOf(::TimerRepository)
+    singleOf(::getTimerController)
 }

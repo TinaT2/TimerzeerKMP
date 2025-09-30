@@ -1,7 +1,7 @@
 package com.t2.timerzeerkmp.data.repository
 
 import com.t2.timerzeerkmp.app.Route
-import com.t2.timerzeerkmp.domain.LiveActivityManager
+import com.t2.timerzeerkmp.domain.TimerController
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.domain.timer.TimerIntent
 import com.t2.timerzeerkmp.domain.timer.TimerMode
@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class TimerRepository(
     private val persistence: TimerPersistence,
-    private val liveActivityManager: LiveActivityManager
+    private val timerController: TimerController
 ) {
     private val _timerState = MutableStateFlow(TimerState())
     val timerState: StateFlow<TimerState> = _timerState
@@ -55,33 +55,33 @@ class TimerRepository(
             it.copy(
                 isRunning = true,
                 elapsedTime = timerInit.initTime,
-                mode = timerInit.mode,
+                mode = TimerMode.valueOf(timerInit.mode),
                 title = timerInit.title,
                 isCountDownDone = false
             )
         }
 
-        liveActivityManager.start(timerInit.initTime)
+        timerController.start(timerInit.initTime)
     }
 
     private fun pauseTimer() {
         timerJob?.cancel()
         _timerState.update { it.copy(isRunning = false) }
-        liveActivityManager.pause()
+        timerController.pause()
     }
 
     private fun resumeTimer() {
         if (_timerState.value.isRunning) return
         _timerState.update { it.copy(isRunning = true) }
         startTicking()
-        liveActivityManager.resume()
+        timerController.resume()
     }
 
     private fun stopTimer() {
         timerJob?.cancel()
         timerJob = null
         _timerState.update { it.copy(isRunning = false, elapsedTime = -1L) }
-        liveActivityManager.stop()
+        timerController.stop()
     }
 
     private fun startTicking() {
