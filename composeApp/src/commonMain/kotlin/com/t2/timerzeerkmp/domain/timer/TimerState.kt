@@ -10,7 +10,7 @@ data class TimerState(
     val title: String = "",
     val mode: TimerMode = TimerMode.STOPWATCH,
     val initialTime: Long? = null,
-    val elapsedTime: Long = 0L,
+    val elapsedTime: Long = -1L,
     val isRunning: Boolean = false,
     val isCountDownDone: Boolean = false,
     val errorMessage: String? = null // TimerZeerError can be simplified to string in shared

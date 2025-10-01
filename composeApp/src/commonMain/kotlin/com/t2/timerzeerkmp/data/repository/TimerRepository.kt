@@ -14,8 +14,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
@@ -28,6 +28,23 @@ class TimerRepository(
 
     private var timerJob: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    init {
+        scope.launch {
+            if (persistence.getIsRunning().first() == true) {
+                timerJob?.cancel()
+                _timerState.update {
+                    it.copy(
+                        isRunning = true,
+                        elapsedTime = persistence.getInitialMilliSeconds().first() ?: 0,
+                        mode = TimerMode.valueOf(persistence.getMode().first()),
+                        title = persistence.getTitle().first()
+                    )
+                }
+                startTicking()
+            }
+        }
+    }
 
     fun onTimerIntent(intent: TimerIntent?) {
         when (intent) {
@@ -44,11 +61,14 @@ class TimerRepository(
 
     private fun startTimer(timerInit: Route.TimerFullScreen) {
         scope.launch {
+            delay(1.seconds)
             persistence.saveInitialMilliSeconds(timerInit.initTime)
             persistence.saveStartEpochMillis(currentTimeMillis())
             persistence.saveIsRunning(true)
-            delay(1.seconds)
+            persistence.saveMode(timerInit.mode)
+            persistence.saveTitle(timerInit.title)
             startTicking()
+            timerController.start(timerInit.initTime)
         }
 
         _timerState.update {
@@ -60,8 +80,6 @@ class TimerRepository(
                 isCountDownDone = false
             )
         }
-
-        timerController.start(timerInit.initTime)
     }
 
     private fun pauseTimer() {
@@ -72,9 +90,23 @@ class TimerRepository(
 
     private fun resumeTimer() {
         if (_timerState.value.isRunning) return
+
         _timerState.update { it.copy(isRunning = true) }
-        startTicking()
-        timerController.resume()
+
+        scope.launch {
+            // Get last known state
+            val lastElapsed = persistence.getElapsedTime().first() ?: 0L
+            val now = currentTimeMillis()
+
+            // Save resume reference point
+            persistence.saveStartEpochMillis(now)
+            persistence.saveIsRunning(true)
+            persistence.saveInitialMilliSeconds(lastElapsed)
+
+            // Restart ticking
+            startTicking()
+            timerController.resume()
+        }
     }
 
     private fun stopTimer() {
@@ -85,27 +117,20 @@ class TimerRepository(
     }
 
     private fun startTicking() {
-        var elapsed = _timerState.value.elapsedTime
+        scope.launch {
+            persistence.saveStartEpochMillis(currentTimeMillis())
 
-        timerJob = scope.launch {
-            while (isActive && _timerState.value.isRunning) {
-                if (_timerState.value.mode == TimerMode.STOPWATCH) {
-                    elapsed += 1000
+            while (_timerState.value.isRunning) {
+                val start = persistence.getStartEpochMillis().first() ?: currentTimeMillis()
+                val initialMillis = persistence.getInitialMilliSeconds().first() ?: 0L
+                val elapsed = if (_timerState.value.mode == TimerMode.STOPWATCH) {
+                    initialMillis + (currentTimeMillis() - start)
                 } else {
-                    elapsed -= 1000
+                    initialMillis - (currentTimeMillis() - start)
                 }
 
-                _timerState.update {
-                    it.copy(
-                        elapsedTime = elapsed.coerceAtLeast(0), // prevent negatives
-                        isCountDownDone = (timerState.value.mode == TimerMode.COUNTDOWN && elapsed <= 0)
-                    )
-                }
-
-                if (timerState.value.mode == TimerMode.COUNTDOWN && elapsed <= 0) {
-                    onTimerIntent(TimerIntent.Stop)
-                }
-
+                persistence.saveElapsedTime(elapsed)
+                _timerState.update { it.copy(elapsedTime = elapsed) }
                 delay(1.seconds)
             }
         }
