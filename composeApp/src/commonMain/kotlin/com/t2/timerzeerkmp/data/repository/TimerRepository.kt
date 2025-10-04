@@ -36,12 +36,11 @@ class TimerRepository(
                 _timerState.update {
                     it.copy(
                         isRunning = true,
-                        elapsedTime = persistence.getInitialMilliSeconds().first() ?: 0,
+                        elapsedTime = persistence.getElapsedTime().first() ?: 0,
                         mode = TimerMode.valueOf(persistence.getMode().first()),
                         title = persistence.getTitle().first()
                     )
                 }
-                startTicking()
             }
         }
     }
@@ -49,6 +48,7 @@ class TimerRepository(
     fun onTimerIntent(intent: TimerIntent?) {
         when (intent) {
             is TimerIntent.Start -> {
+                if (_timerState.value.isRunning) return
                 startTimer(intent.timerInit)
             }
 
@@ -62,24 +62,31 @@ class TimerRepository(
     private fun startTimer(timerInit: Route.TimerFullScreen) {
         scope.launch {
             delay(1.seconds)
-            persistence.saveInitialMilliSeconds(timerInit.initTime)
-            persistence.saveStartEpochMillis(currentTimeMillis())
+            timerInit.initTime?.let {
+                persistence.saveInitialMilliSeconds(it)
+                persistence.saveStartEpochMillis(currentTimeMillis())
+            }
+
             persistence.saveIsRunning(true)
-            persistence.saveMode(timerInit.mode)
-            persistence.saveTitle(timerInit.title)
+            timerInit.mode?.let { persistence.saveMode(it) }
+            timerInit.title?.let { persistence.saveTitle(it) }
             startTicking()
-            timerController.start(timerInit.initTime)
+            val init = persistence.getInitialMilliSeconds().first() ?: 0L
+            val mode = persistence.getMode().first()
+            val title = persistence.getTitle().first()
+            timerController.start(init)
+            _timerState.update {
+                it.copy(
+                    isRunning = true,
+                    elapsedTime = init,
+                    mode = TimerMode.valueOf(mode),
+                    title = title,
+                    isCountDownDone = false
+                )
+            }
         }
 
-        _timerState.update {
-            it.copy(
-                isRunning = true,
-                elapsedTime = timerInit.initTime,
-                mode = TimerMode.valueOf(timerInit.mode),
-                title = timerInit.title,
-                isCountDownDone = false
-            )
-        }
+
     }
 
     private fun pauseTimer() {
@@ -119,10 +126,9 @@ class TimerRepository(
     private fun startTicking() {
         scope.launch {
             persistence.saveStartEpochMillis(currentTimeMillis())
-
+            val start = persistence.getStartEpochMillis().first() ?: currentTimeMillis()
+            val initialMillis = persistence.getInitialMilliSeconds().first() ?: 0L
             while (_timerState.value.isRunning) {
-                val start = persistence.getStartEpochMillis().first() ?: currentTimeMillis()
-                val initialMillis = persistence.getInitialMilliSeconds().first() ?: 0L
                 val elapsed = if (_timerState.value.mode == TimerMode.STOPWATCH) {
                     initialMillis + (currentTimeMillis() - start)
                 } else {

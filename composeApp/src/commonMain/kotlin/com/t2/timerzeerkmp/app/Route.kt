@@ -2,6 +2,7 @@ package com.t2.timerzeerkmp.app
 
 import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface Route {
 
     @Serializable
@@ -11,5 +12,5 @@ sealed interface Route {
     data object TimerPreview : Route
 
     @Serializable
-    data class TimerFullScreen(val mode: String, val title: String, val initTime: Long) : Route
+    data class TimerFullScreen(val mode: String? =null, val title: String? = null, val initTime: Long? = 0L) : Route
 }

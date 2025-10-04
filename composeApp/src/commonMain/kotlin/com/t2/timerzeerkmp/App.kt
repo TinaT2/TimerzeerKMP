@@ -89,7 +89,7 @@ fun AppNavHost() {
                 LaunchedEffect(Unit) {
                     if (repository.timerState.value.isRunning)
                         navController.navigate(
-                            Route.TimerFullScreen
+                            Route.TimerFullScreen()
                         )
                 }
                 TimerScreenRoot { mode, title, initTime ->

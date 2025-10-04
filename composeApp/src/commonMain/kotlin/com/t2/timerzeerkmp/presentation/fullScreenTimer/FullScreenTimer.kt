@@ -100,7 +100,9 @@ fun RootTimerFullScreen(
 //    }
 
 
-    LaunchedEffect(Unit) { viewModel.onTimerIntent(TimerFullScreenIntent.Start(timerInitiate)) }
+    LaunchedEffect(Unit) {
+            viewModel.onTimerIntent(TimerFullScreenIntent.Start(timerInitiate))
+    }
     TimerStarted(timerState.value, onTimerIntent = {
         viewModel.onTimerIntent(it)
     }, onNavigateBack = onNavigateBack)
