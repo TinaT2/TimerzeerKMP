@@ -13,7 +13,8 @@ data class TimerState(
     val elapsedTime: Long = -1L,
     val isRunning: Boolean = false,
     val isCountDownDone: Boolean = false,
-    val errorMessage: String? = null // TimerZeerError can be simplified to string in shared
+    val errorMessage: String? = null,
+    val startEpocMilliSecond:Long? = null
 )
 @Serializable
 enum class TimerMode(val value: StringResource) {

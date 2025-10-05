@@ -1,11 +1,14 @@
 package com.t2.timerzeerkmp.data.repository
 
 import com.t2.timerzeerkmp.app.Route
+import com.t2.timerzeerkmp.data.mapper.toDisplayString
+import com.t2.timerzeerkmp.data.mapper.toTimeComponents
 import com.t2.timerzeerkmp.domain.TimerController
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.domain.timer.TimerIntent
 import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.timer.TimerState
+import com.t2.timerzeerkmp.domain.util.Log
 import com.t2.timerzeerkmp.domain.util.currentTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +32,10 @@ class TimerRepository(
     private var timerJob: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
+    private val TAG = "TimerRepository"
+
     init {
+        Log.d(TAG, "init")
         scope.launch {
             if (persistence.getIsRunning().first() == true) {
                 timerJob?.cancel()
@@ -41,6 +47,18 @@ class TimerRepository(
                         title = persistence.getTitle().first()
                     )
                 }
+            }
+        }
+
+        scope.launch {
+            timerState.collect { state ->
+                Log.d(TAG,currentTimeMillis().toTimeComponents().toDisplayString())
+                persistence.saveIsRunning(state.isRunning)
+                state.mode.name.let { persistence.saveMode(it) }
+                persistence.saveTitle(state.title)
+                persistence.saveElapsedTime(state.elapsedTime)
+                state.initialTime?.let { persistence.saveInitialMilliSeconds(it) }
+                state.startEpocMilliSecond?.let { persistence.saveStartEpochMillis(it) }
             }
         }
     }
@@ -59,34 +77,25 @@ class TimerRepository(
         }
     }
 
-    private fun startTimer(timerInit: Route.TimerFullScreen) {
+    private fun startTimer(timerInit: Route.TimerFullScreen?) {
         scope.launch {
             delay(1.seconds)
-            timerInit.initTime?.let {
-                persistence.saveInitialMilliSeconds(it)
-                persistence.saveStartEpochMillis(currentTimeMillis())
-            }
-
-            persistence.saveIsRunning(true)
-            timerInit.mode?.let { persistence.saveMode(it) }
-            timerInit.title?.let { persistence.saveTitle(it) }
-            startTicking()
-            val init = persistence.getInitialMilliSeconds().first() ?: 0L
-            val mode = persistence.getMode().first()
-            val title = persistence.getTitle().first()
-            timerController.start(init)
-            _timerState.update {
-                it.copy(
-                    isRunning = true,
-                    elapsedTime = init,
-                    mode = TimerMode.valueOf(mode),
-                    title = title,
-                    isCountDownDone = false
-                )
+            if (timerInit?.mode != null && timerInit.title != null && timerInit.initTime != null) {
+                _timerState.update {
+                    it.copy(
+                        mode = TimerMode.valueOf(timerInit.mode),
+                        title = timerInit.title,
+                        initialTime = timerInit.initTime,
+                        isRunning = true,
+                        elapsedTime = timerInit.initTime,
+                        isCountDownDone = false,
+                        startEpocMilliSecond = currentTimeMillis()
+                    )
+                }
+                startTicking()
+                timerController.start(timerState.value.initialTime ?: 0L)
             }
         }
-
-
     }
 
     private fun pauseTimer() {
@@ -98,44 +107,43 @@ class TimerRepository(
     private fun resumeTimer() {
         if (_timerState.value.isRunning) return
 
-        _timerState.update { it.copy(isRunning = true) }
-
         scope.launch {
-            // Get last known state
             val lastElapsed = persistence.getElapsedTime().first() ?: 0L
             val now = currentTimeMillis()
+            _timerState.update {
+                it.copy(
+                    isRunning = true,
+                    startEpocMilliSecond = now,
+                    initialTime = lastElapsed
+                )
+            }
 
-            // Save resume reference point
-            persistence.saveStartEpochMillis(now)
-            persistence.saveIsRunning(true)
-            persistence.saveInitialMilliSeconds(lastElapsed)
-
-            // Restart ticking
             startTicking()
             timerController.resume()
         }
+
     }
 
     private fun stopTimer() {
+        _timerState.update { it.copy(isRunning = false, elapsedTime = -1L, initialTime = 0L) }
         timerJob?.cancel()
         timerJob = null
-        _timerState.update { it.copy(isRunning = false, elapsedTime = -1L) }
         timerController.stop()
     }
 
     private fun startTicking() {
-        scope.launch {
-            persistence.saveStartEpochMillis(currentTimeMillis())
-            val start = persistence.getStartEpochMillis().first() ?: currentTimeMillis()
-            val initialMillis = persistence.getInitialMilliSeconds().first() ?: 0L
+        timerJob = scope.launch {
+            _timerState.update {
+                it.copy(startEpocMilliSecond = currentTimeMillis())
+            }
+            val start = timerState.value.startEpocMilliSecond?: currentTimeMillis()
+            val initialMillis = timerState.value.initialTime?:0L
             while (_timerState.value.isRunning) {
                 val elapsed = if (_timerState.value.mode == TimerMode.STOPWATCH) {
                     initialMillis + (currentTimeMillis() - start)
                 } else {
                     initialMillis - (currentTimeMillis() - start)
                 }
-
-                persistence.saveElapsedTime(elapsed)
                 _timerState.update { it.copy(elapsedTime = elapsed) }
                 delay(1.seconds)
             }
