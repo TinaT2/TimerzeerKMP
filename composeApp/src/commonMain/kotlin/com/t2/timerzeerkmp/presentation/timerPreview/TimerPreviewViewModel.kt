@@ -2,6 +2,7 @@ package com.t2.timerzeerkmp.presentation.timerPreview
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.data.mapper.minusDay
 import com.t2.timerzeerkmp.data.mapper.minusHour
 import com.t2.timerzeerkmp.data.mapper.minusMinute
@@ -13,8 +14,11 @@ import com.t2.timerzeerkmp.data.mapper.plusSecond
 import com.t2.timerzeerkmp.data.repository.SettingsRepository
 import com.t2.timerzeerkmp.data.repository.TimerRepository
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -27,7 +31,19 @@ class TimerPreviewViewModel(
     private val _timerPreviewState = MutableStateFlow(TimerPreviewState())
     val timerPreviewState: StateFlow<TimerPreviewState> =
         _timerPreviewState
+
+    private val _navEvent = Channel<Route>(Channel.BUFFERED)
+    val navEvent = _navEvent.receiveAsFlow()
     private var timerJob: Job? = null
+
+    fun emitNavigationIfRunning() {
+        viewModelScope.launch {
+            val isRunning = timerRepository.getIsRunning().first()
+            if (isRunning == true) {
+                _navEvent.trySend(Route.TimerFullScreen())
+            }
+        }
+    }
 
     fun onUserAction(action: TimerPreviewIntent) {
         when (action) {

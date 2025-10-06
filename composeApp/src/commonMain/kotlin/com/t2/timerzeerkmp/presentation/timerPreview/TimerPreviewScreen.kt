@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,16 +77,26 @@ import timerzeerkmp.composeapp.generated.resources.titleIcon
 import timerzeerkmp.composeapp.generated.resources.value_default
 
 val DEFAULT_NAME = Res.string.value_default
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreenRoot(
     viewModel: TimerPreviewViewModel = koinViewModel(),
-    onTimerStarted: (mode: TimerMode,title:String,initTime:Long) -> Unit
+    onTimerStarted: (mode: TimerMode?, title: String?, initTime: Long?) -> Unit
 ) {
     val timerPreviewState by viewModel.timerPreviewState.collectAsStateWithLifecycle()
     var uiOverlayIntent: UiOverlayIntent by remember { mutableStateOf(UiOverlayIntent.None) }
     val customColors = LocalCustomColors.current
     val customGraphicIds = LocalCustomGraphicIds.current
+
+    LaunchedEffect(Unit) {
+        viewModel.emitNavigationIfRunning()
+
+        viewModel.navEvent.collect { route ->
+            onTimerStarted(null, null, null)
+        }
+    }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         backgrounds()[customGraphicIds.backgroundId]?.invoke()
@@ -100,7 +111,11 @@ fun TimerScreenRoot(
                 paddingValues,
                 timerPreviewState = timerPreviewState,
                 onTimerStarted = {
-                    onTimerStarted(timerPreviewState.mode,timerPreviewState.getTitle(),timerPreviewState.getInitTime())
+                    onTimerStarted(
+                        timerPreviewState.mode,
+                        timerPreviewState.getTitle(),
+                        timerPreviewState.getInitTime()
+                    )
                 },
                 onUserActionIntent = { intent ->
                     viewModel.onUserAction(intent)
