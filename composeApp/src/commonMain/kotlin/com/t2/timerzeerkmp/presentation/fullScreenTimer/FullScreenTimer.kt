@@ -100,8 +100,9 @@ fun RootTimerFullScreen(
 //    }
 
 
-    LaunchedEffect(Unit) {
-            viewModel.onTimerIntent(TimerFullScreenIntent.Start(timerInitiate))
+    LaunchedEffect(viewModel.fullState.value.timer.isRunning) {
+        if(!viewModel.fullState.value.timer.isRunning)
+        viewModel.onTimerIntent(TimerFullScreenIntent.Start(timerInitiate))
     }
     TimerStarted(timerState.value, onTimerIntent = {
         viewModel.onTimerIntent(it)

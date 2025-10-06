@@ -26,6 +26,7 @@ import com.t2.timerzeerkmp.presentation.main.theme.backgrounds
 import com.t2.timerzeerkmp.presentation.main.theme.endingAnimations
 import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
 import com.t2.timerzeerkmp.presentation.timerPreview.TimerScreenRoot
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -74,7 +75,6 @@ fun App() {
 fun AppNavHost() {
     val navController = rememberNavController()
     val repository: TimerRepository = koinInject()
-
     NavHost(
         navController = navController,
         startDestination = Route.TimerGraph
@@ -87,10 +87,12 @@ fun AppNavHost() {
                 exitTransition = { fadeOut(animationSpec = tween(durationMillis = (1000))) }
             ) {
                 LaunchedEffect(Unit) {
-                    if (repository.timerState.value.isRunning)
-                        navController.navigate(
-                            Route.TimerFullScreen()
-                        )
+                    repository.getIsRunning().collectLatest {
+                        if (it == true)
+                            navController.navigate(
+                                Route.TimerFullScreen()
+                            )
+                    }
                 }
                 TimerScreenRoot { mode, title, initTime ->
                     navController.navigate(Route.TimerFullScreen(mode.name, title, initTime))

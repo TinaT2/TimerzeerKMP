@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.t2.timerzeerkmp.data.repository.TimerRepository
 import com.t2.timerzeerkmp.domain.timer.TimerState
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,15 +28,24 @@ class FullScreenTimerViewModel(
 
     var appearJob: Job? = null
     private val _uiState = MutableStateFlow(TimerUiState())
-    val fullState: StateFlow<FullScreenTimerState> =
-        combine(repository.timerState, _uiState) { timer, ui ->
-            FullScreenTimerState(timer, ui)
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000L),
-            initialValue = FullScreenTimerState(TimerState(), TimerUiState())
-        )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val fullState: StateFlow<FullScreenTimerState> =
+        repository.isReady
+            .filter { it } // Wait until repository restored
+            .flatMapLatest {
+                combine(repository.timerState, _uiState) { timer, ui ->
+                    FullScreenTimerState(timer, ui)
+                }
+            }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000L),
+                initialValue = FullScreenTimerState(
+                    TimerState(isRunning = false), // safe fallback
+                    TimerUiState()
+                )
+            )
 
     fun onTimerIntent(intent: TimerFullScreenIntent) {
         when (intent) {

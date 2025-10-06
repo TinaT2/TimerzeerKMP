@@ -1,8 +1,6 @@
 package com.t2.timerzeerkmp.data.repository
 
 import com.t2.timerzeerkmp.app.Route
-import com.t2.timerzeerkmp.data.mapper.toDisplayString
-import com.t2.timerzeerkmp.data.mapper.toTimeComponents
 import com.t2.timerzeerkmp.domain.TimerController
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.domain.timer.TimerIntent
@@ -29,30 +27,35 @@ class TimerRepository(
     private val _timerState = MutableStateFlow(TimerState())
     val timerState: StateFlow<TimerState> = _timerState
 
+    private val _isReady = MutableStateFlow(false)
+    val isReady: StateFlow<Boolean> get() = _isReady
+
+
     private var timerJob: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val TAG = "TimerRepository"
 
     init {
-        Log.d(TAG, "init")
         scope.launch {
-            if (persistence.getIsRunning().first() == true) {
-                timerJob?.cancel()
-                _timerState.update {
-                    it.copy(
-                        isRunning = true,
-                        elapsedTime = persistence.getElapsedTime().first() ?: 0,
-                        mode = TimerMode.valueOf(persistence.getMode().first()),
-                        title = persistence.getTitle().first()
-                    )
-                }
+            timerJob?.cancel()
+            _timerState.update {
+                it.copy(
+                    isRunning = persistence.getIsRunning().first() ?: false,
+                    elapsedTime = persistence.getElapsedTime().first() ?: 0,
+                    mode = TimerMode.valueOf(persistence.getMode().first()),
+                    title = persistence.getTitle().first(),
+                    startEpocMilliSecond = persistence.getStartEpochMillis().first() ?: 0L,
+                    initialTime = persistence.getInitialMilliSeconds().first()
+                )
             }
+            Log.d(TAG, "init,isRunning:${_timerState.value.isRunning}")
+            _isReady.value = true
+            if (timerState.value.isRunning) startTicking()
         }
 
         scope.launch {
             timerState.collect { state ->
-                Log.d(TAG,currentTimeMillis().toTimeComponents().toDisplayString())
                 persistence.saveIsRunning(state.isRunning)
                 state.mode.name.let { persistence.saveMode(it) }
                 persistence.saveTitle(state.title)
@@ -61,11 +64,15 @@ class TimerRepository(
                 state.startEpocMilliSecond?.let { persistence.saveStartEpochMillis(it) }
             }
         }
+
     }
+
+    suspend fun getIsRunning() = persistence.getIsRunning()
 
     fun onTimerIntent(intent: TimerIntent?) {
         when (intent) {
             is TimerIntent.Start -> {
+                Log.d(TAG, "onTimerIntent: ${_timerState.value.isRunning}")
                 if (_timerState.value.isRunning) return
                 startTimer(intent.timerInit)
             }
@@ -92,9 +99,9 @@ class TimerRepository(
                         startEpocMilliSecond = currentTimeMillis()
                     )
                 }
-                startTicking()
-                timerController.start(timerState.value.initialTime ?: 0L)
             }
+            startTicking()
+            timerController.start(timerState.value.initialTime ?: 0L)
         }
     }
 
@@ -133,19 +140,19 @@ class TimerRepository(
 
     private fun startTicking() {
         timerJob = scope.launch {
-            _timerState.update {
-                it.copy(startEpocMilliSecond = currentTimeMillis())
-            }
-            val start = timerState.value.startEpocMilliSecond?: currentTimeMillis()
-            val initialMillis = timerState.value.initialTime?:0L
-            while (_timerState.value.isRunning) {
-                val elapsed = if (_timerState.value.mode == TimerMode.STOPWATCH) {
-                    initialMillis + (currentTimeMillis() - start)
-                } else {
-                    initialMillis - (currentTimeMillis() - start)
+            if (isReady.value) {
+                val start = timerState.value.startEpocMilliSecond ?: currentTimeMillis()
+                val initialMillis = timerState.value.initialTime ?: 0L
+                Log.d(TAG, "isRunning:" + _timerState.value.isRunning.toString())
+                while (_timerState.value.isRunning) {
+                    val elapsed = if (_timerState.value.mode == TimerMode.STOPWATCH) {
+                        initialMillis + (currentTimeMillis() - start)
+                    } else {
+                        initialMillis - (currentTimeMillis() - start)
+                    }
+                    _timerState.update { it.copy(elapsedTime = elapsed) }
+                    delay(1.seconds)
                 }
-                _timerState.update { it.copy(elapsedTime = elapsed) }
-                delay(1.seconds)
             }
         }
     }
