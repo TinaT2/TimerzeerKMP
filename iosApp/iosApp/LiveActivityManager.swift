@@ -1,71 +1,66 @@
-//
-//  LiveActivityHandler.swift
-//  iosApp
-//
-//  Created by Tina on 9/17/25.
-//
-
-// In iosApp/iosApp/LiveActivityHandler.swift
-
 import Foundation
 import ActivityKit
 import ComposeApp
+import KMPNativeCoroutinesAsync
 
-public class LiveActivityManager: NSObject, TimerController {
+
+
+public class LiveActivityManager: NSObject, @preconcurrency TimerController {
+    
     private var activity: Activity<TimerActivityAttributes>? = nil
-    private var remainingSeconds: Int64? = nil  // Store remaining time when paused
-
-    public func pause() {
-        guard let activity = activity else { return }
-        Task {
-            // Calculate remaining seconds
-            let targetDate = activity.content.state.targetDate
-            let now = Date()
-            let remaining = Int64(targetDate.timeIntervalSince(now))
-            self.remainingSeconds = max(remaining, 0)
-
-            // Freeze: update targetDate to now
-            let frozenState = TimerActivityAttributes.ContentState(
-                targetDate: now
-            )
-            let frozenContent = ActivityContent(state: frozenState, staleDate: nil)
-            await activity.update(frozenContent)
-
-            print("⏸ Live Activity paused with \(self.remainingSeconds ?? 0)s remaining")
+    private var remainingSeconds: Int64? = nil
+    private var observeTask: Task<Void, Never>? = nil
+    
+    public override init() {
+        super.init()
+        observeTimerState()
+    }
+    
+    // MARK: - Observe Kotlin TimerStatpae Flow
+    private func observeTimerState() {
+        observeTask?.cancel()
+        observeTask = Task {
+            
+            let repository = KoinHelperKt.getTimerRepository()
+            
+            observeTask = Task {
+                do {
+                    // Convert the Kotlin StateFlow into a Swift AsyncSequence
+                    let sequence = asyncSequence(for: repository.timerStateFlow)
+                    
+                    for try await state in sequence {
+                        print("🕒 TimerState changed: running=\(state.isRunning), elapsed=\(state.elapsedTime)")
+                        
+                        // Example: Update Live Activity UI dynamically
+                        if state.isRunning {
+                            await self.updateActivity(elapsedTime: state.elapsedTime, mode: state.mode.name)
+                        }
+                    }
+                } catch {
+                    print("Error: \(error)")
+                }
+            }
         }
     }
-
-    public func resume() {
-        guard let activity = activity, let remaining = remainingSeconds else { return }
-        Task {
-            // Resume: recompute targetDate
-            let resumedState = TimerActivityAttributes.ContentState(
-                targetDate: Date().addingTimeInterval(TimeInterval(remaining))
-            )
-            let resumedContent = ActivityContent(state: resumedState, staleDate: nil)
-            await activity.update(resumedContent)
-
-            self.remainingSeconds = nil
-            print("▶️ Live Activity resumed with \(remaining)s left")
-        }
-    }
-
+    
+    // MARK: - Start
+    @MainActor
     @objc public func start(durationInSeconds: Int64) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             print("Activities are not enabled.")
             return
         }
-
+        
         let attributes = TimerActivityAttributes()
         let state = TimerActivityAttributes.ContentState(
-            targetDate: Date().addingTimeInterval(TimeInterval(durationInSeconds))
+            targetDate: Date().addingTimeInterval(TimeInterval(durationInSeconds/1000))
         )
         let content = ActivityContent(state: state, staleDate: nil)
-
+        
         do {
             activity = try Activity<TimerActivityAttributes>.request(
                 attributes: attributes,
-                content: content, // ✅ new API
+                content: content,
                 pushType: nil
             )
             print("✅ Live Activity started successfully.")
@@ -73,7 +68,35 @@ public class LiveActivityManager: NSObject, TimerController {
             print("❌ Error starting activity: \(error.localizedDescription)")
         }
     }
-
+    
+    // MARK: - Pause
+    public func pause() {
+        guard let activity = activity else { return }
+        Task {
+            let now = Date()
+            let targetDate = activity.content.state.targetDate
+            remainingSeconds = max(Int64(targetDate.timeIntervalSince(now)), 0)
+            
+            let frozenState = TimerActivityAttributes.ContentState(targetDate: now)
+            let frozenContent = ActivityContent(state: frozenState, staleDate: nil)
+            await activity.update(frozenContent)
+            print("⏸ Paused with \(remainingSeconds ?? 0)s remaining")
+        }
+    }
+    
+    // MARK: - Resume
+    public func resume() {
+        guard let activity = activity, let remaining = remainingSeconds else { return }
+        Task {
+            let newTarget = Date().addingTimeInterval(TimeInterval(remaining))
+            let newState = TimerActivityAttributes.ContentState(targetDate: newTarget)
+            await activity.update(ActivityContent(state: newState, staleDate: nil))
+            remainingSeconds = nil
+            print("▶️ Resumed with \(remaining)s left")
+        }
+    }
+    
+    // MARK: - Stop
     @objc public func stop() {
         Task {
             if let activity = activity {
@@ -82,6 +105,25 @@ public class LiveActivityManager: NSObject, TimerController {
                     dismissalPolicy: .immediate
                 )
             }
+            observeTask?.cancel()
         }
+    }
+    
+    // MARK: - Update helper
+    private func updateActivity(elapsedTime: Int64, mode: String) async {
+        guard let activity = activity else { return }
+
+               // COUNTDOWN → remaining time = elapsedTime (already decreasing)
+               // STOPWATCH → elapsedTime increasing, so no targetDate
+               let targetDate: Date
+               if mode == "COUNTDOWN" {
+                   targetDate = Date().addingTimeInterval(TimeInterval(elapsedTime) / 1000)
+               } else {
+                   targetDate = Date().addingTimeInterval(TimeInterval(elapsedTime) / 1000)
+               }
+
+               let newState = TimerActivityAttributes.ContentState(targetDate: targetDate)
+               await activity.update(ActivityContent(state: newState, staleDate: nil))
+               print("🔁 Updated Live Activity targetDate: \(targetDate)")
     }
 }

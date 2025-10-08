@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
+    id("com.rickclephas.kmp.nativecoroutines") version "1.0.0-ALPHA-47"
 }
 
 kotlin {
@@ -52,10 +53,14 @@ kotlin {
             api(libs.koin.core)
             implementation(libs.androidx.datastore.preferences.core)
             implementation(libs.compottie)
+            implementation(libs.kmp.nativecoroutines.core)
 
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+        sourceSets.all {
+            languageSettings.optIn("kotlin.experimental.ExperimentalObjCName")
         }
     }
 }

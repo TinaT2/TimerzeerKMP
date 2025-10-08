@@ -1,5 +1,6 @@
 package com.t2.timerzeerkmp.data.repository
 
+import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
 import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.domain.TimerController
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
@@ -15,6 +16,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,11 +27,11 @@ class TimerRepository(
     private val timerController: TimerController
 ) {
     private val _timerState = MutableStateFlow(TimerState())
-    val timerState: StateFlow<TimerState> = _timerState
+    @NativeCoroutinesState
+    val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
 
     private val _isReady = MutableStateFlow(false)
     val isReady: StateFlow<Boolean> get() = _isReady
-
 
     private var timerJob: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -64,7 +66,6 @@ class TimerRepository(
                 state.startEpocMilliSecond?.let { persistence.saveStartEpochMillis(it) }
             }
         }
-
     }
 
     suspend fun getIsRunning() = persistence.getIsRunning()

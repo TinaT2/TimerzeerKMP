@@ -3,8 +3,6 @@
 //  TimerWidget
 //
 //  Created by Tina on 9/16/25.
-//
-//  REPLACE THE ENTIRE CONTENTS OF YOUR FILE WITH THIS CODE
 
 import ActivityKit
 import WidgetKit
