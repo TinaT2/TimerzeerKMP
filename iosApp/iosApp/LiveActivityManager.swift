@@ -51,21 +51,31 @@ public class LiveActivityManager: NSObject, @preconcurrency TimerController {
             return
         }
         
-        let attributes = TimerActivityAttributes()
-        let state = TimerActivityAttributes.ContentState(
-            targetDate: Date().addingTimeInterval(TimeInterval(durationInSeconds/1000))
-        )
-        let content = ActivityContent(state: state, staleDate: nil)
-        
-        do {
-            activity = try Activity<TimerActivityAttributes>.request(
-                attributes: attributes,
-                content: content,
-                pushType: nil
+        Task{
+            for existing in Activity<TimerActivityAttributes>.activities {
+                await existing.end(
+                    ActivityContent(state: existing.content.state, staleDate: nil),
+                    dismissalPolicy: .immediate
+                )
+                print("🧹 Ended previous Live Activity.")
+            }
+            
+            let attributes = TimerActivityAttributes()
+            let state = TimerActivityAttributes.ContentState(
+                targetDate: Date().addingTimeInterval(TimeInterval(durationInSeconds/1000))
             )
-            print("✅ Live Activity started successfully.")
-        } catch {
-            print("❌ Error starting activity: \(error.localizedDescription)")
+            let content = ActivityContent(state: state, staleDate: nil)
+            
+            do {
+                activity = try Activity<TimerActivityAttributes>.request(
+                    attributes: attributes,
+                    content: content,
+                    pushType: nil
+                )
+                print("✅ Live Activity started successfully.")
+            } catch {
+                print("❌ Error starting activity: \(error.localizedDescription)")
+            }
         }
     }
     

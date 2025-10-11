@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.zIndex
@@ -29,6 +30,7 @@ import com.t2.timerzeerkmp.data.mapper.toTimeComponents
 import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.timer.TimerState
 import com.t2.timerzeerkmp.domain.util.LocalUtil
+import com.t2.timerzeerkmp.domain.util.ToastHandler
 import com.t2.timerzeerkmp.domain.util.shareText
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.FullScreenTimerViewModel.Companion.COUNTDOWN_DONE_DELAY_MS
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.components.LottieLoader
@@ -55,6 +57,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import timerzeerkmp.composeapp.generated.resources.Res
 import timerzeerkmp.composeapp.generated.resources.days
 import timerzeerkmp.composeapp.generated.resources.hide_ui
+import timerzeerkmp.composeapp.generated.resources.hold_for_3_seconds
 import timerzeerkmp.composeapp.generated.resources.hours
 import timerzeerkmp.composeapp.generated.resources.lock
 import timerzeerkmp.composeapp.generated.resources.minutes
@@ -118,6 +121,7 @@ fun TimerStarted(
     val customGraphicIds = LocalCustomGraphicIds.current
     val customColors = LocalCustomColors.current
     val coroutineScope = rememberCoroutineScope()
+    val holdForSecondsString = stringResource(Res.string.hold_for_3_seconds)
 
     LaunchedEffect(timerState.timer.isCountDownDone) {
         if (timerState.timer.isCountDownDone) {
@@ -299,11 +303,7 @@ fun TimerStarted(
                                     onTimerIntent(TimerFullScreenIntent.Lock)
                                 }
                             ) {
-//todo                               Toast.makeText(
-//                                    context,
-//                                    context.getString(Res.string.hold_for_3_seconds),
-//                                    Toast.LENGTH_SHORT
-//                                ).show()
+                                ToastHandler.show( holdForSecondsString)
                                 onTimerIntent(TimerFullScreenIntent.IconAppear)
                             }
                         }
