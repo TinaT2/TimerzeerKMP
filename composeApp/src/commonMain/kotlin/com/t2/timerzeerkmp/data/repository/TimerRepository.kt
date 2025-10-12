@@ -73,7 +73,7 @@ class TimerRepository(
     fun onTimerIntent(intent: TimerIntent?) {
         when (intent) {
             is TimerIntent.Start -> {
-                Log.d(TAG, "onTimerIntent: ${_timerState.value.isRunning}")
+                Log.d(TAG, "onTimerIntent Start: ${_timerState.value.isRunning}")
                 if (_timerState.value.isRunning) return
                 startTimer(intent.timerInit)
             }
@@ -149,9 +149,16 @@ class TimerRepository(
                     val elapsed = if (_timerState.value.mode == TimerMode.STOPWATCH) {
                         initialMillis + (currentTimeMillis() - start)
                     } else {
-                        initialMillis - (currentTimeMillis() - start)
+                        start + initialMillis + 1000 - currentTimeMillis()
                     }
                     _timerState.update { it.copy(elapsedTime = elapsed) }
+
+                    if (elapsed < 0L && timerState.value.mode == TimerMode.COUNTDOWN) {
+                        Log.d(TAG, "countdownDone")
+                        _timerState.update { it.copy(isCountDownDone = true) }
+                        stopTimer()
+                    }
+
                     delay(1.seconds)
                 }
             }

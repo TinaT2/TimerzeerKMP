@@ -94,7 +94,7 @@ fun RootTimerFullScreen(
         onNavigateBack()
     }
 
-    LaunchedEffect(viewModel.fullState.value.timer.isRunning) {
+    LaunchedEffect(Unit) {
         if (!viewModel.fullState.value.timer.isRunning)
             viewModel.onTimerIntent(TimerFullScreenIntent.Start(timerInitiate))
     }
@@ -117,6 +117,7 @@ fun TimerStarted(
     LaunchedEffect(timerState.timer.isCountDownDone) {
         if (timerState.timer.isCountDownDone) {
             delay(COUNTDOWN_DONE_DELAY_MS)
+            onTimerIntent(TimerFullScreenIntent.Stop)
             onNavigateBack()
         }
     }
@@ -154,7 +155,7 @@ fun TimerStarted(
                     contentAlignment = Alignment.Center
                 ) {
                     SmoothFieldFadeAnimatedVisibility(
-                        visible = timerState.timer.isCountDownDone
+                        visible = timerState.timer.isCountDownDone && timerState.timer.mode == TimerMode.COUNTDOWN
                     ) {
                         LottieLoader(
                             modifier = Modifier

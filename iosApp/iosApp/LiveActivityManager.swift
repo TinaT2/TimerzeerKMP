@@ -11,38 +11,6 @@ public class LiveActivityManager: NSObject, @preconcurrency TimerController {
     private var remainingSeconds: Int64? = nil
     private var observeTask: Task<Void, Never>? = nil
     
-    public override init() {
-        super.init()
-        observeTimerState()
-    }
-    
-    // MARK: - Observe Kotlin TimerStatpae Flow
-    private func observeTimerState() {
-        observeTask?.cancel()
-        observeTask = Task {
-            
-            let repository = KoinHelperKt.getTimerRepository()
-            
-            observeTask = Task {
-                do {
-                    // Convert the Kotlin StateFlow into a Swift AsyncSequence
-                    let sequence = asyncSequence(for: repository.timerStateFlow)
-                    
-                    for try await state in sequence {
-                        print("🕒 TimerState changed: running=\(state.isRunning), elapsed=\(state.elapsedTime)")
-                        
-                        // Example: Update Live Activity UI dynamically
-                        if state.isRunning {
-                            await self.updateActivity(elapsedTime: state.elapsedTime, mode: state.mode.name)
-                        }
-                    }
-                } catch {
-                    print("Error: \(error)")
-                }
-            }
-        }
-    }
-    
     // MARK: - Start
     @MainActor
     @objc public func start(durationInSeconds: Int64) {
@@ -123,14 +91,8 @@ public class LiveActivityManager: NSObject, @preconcurrency TimerController {
     private func updateActivity(elapsedTime: Int64, mode: String) async {
         guard let activity = activity else { return }
 
-               // COUNTDOWN → remaining time = elapsedTime (already decreasing)
-               // STOPWATCH → elapsedTime increasing, so no targetDate
-               let targetDate: Date
-               if mode == "COUNTDOWN" {
-                   targetDate = Date().addingTimeInterval(TimeInterval(elapsedTime) / 1000)
-               } else {
-                   targetDate = Date().addingTimeInterval(TimeInterval(elapsedTime) / 1000)
-               }
+               let targetDate = Date().addingTimeInterval(TimeInterval(elapsedTime) / 1000)
+               
 
                let newState = TimerActivityAttributes.ContentState(targetDate: targetDate)
                await activity.update(ActivityContent(state: newState, staleDate: nil))
