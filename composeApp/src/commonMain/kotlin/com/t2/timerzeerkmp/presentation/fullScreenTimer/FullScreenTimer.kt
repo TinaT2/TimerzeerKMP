@@ -19,7 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.zIndex
@@ -29,6 +28,7 @@ import com.t2.timerzeerkmp.data.mapper.toDisplayString
 import com.t2.timerzeerkmp.data.mapper.toTimeComponents
 import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.timer.TimerState
+import com.t2.timerzeerkmp.domain.util.HandleBackPress
 import com.t2.timerzeerkmp.domain.util.LocalUtil
 import com.t2.timerzeerkmp.domain.util.ToastHandler
 import com.t2.timerzeerkmp.domain.util.shareText
@@ -88,24 +88,15 @@ fun RootTimerFullScreen(
     onNavigateBack: () -> Unit
 ) {
     val timerState = viewModel.fullState.collectAsStateWithLifecycle()
-//todo    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-//    DisposableEffect(Unit) {
-//        val callback = object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                viewModel.onTimerIntent(TimerFullScreenIntent.Stop)
-//                onNavigateBack()
-//            }
-//        }
-//        backDispatcher?.addCallback(callback)
-//        onDispose {
-//            callback.remove()
-//        }
-//    }
 
+    HandleBackPress {
+        viewModel.onTimerIntent(TimerFullScreenIntent.Stop)
+        onNavigateBack()
+    }
 
     LaunchedEffect(viewModel.fullState.value.timer.isRunning) {
-        if(!viewModel.fullState.value.timer.isRunning)
-        viewModel.onTimerIntent(TimerFullScreenIntent.Start(timerInitiate))
+        if (!viewModel.fullState.value.timer.isRunning)
+            viewModel.onTimerIntent(TimerFullScreenIntent.Start(timerInitiate))
     }
     TimerStarted(timerState.value, onTimerIntent = {
         viewModel.onTimerIntent(it)
@@ -303,7 +294,7 @@ fun TimerStarted(
                                     onTimerIntent(TimerFullScreenIntent.Lock)
                                 }
                             ) {
-                                ToastHandler.show( holdForSecondsString)
+                                ToastHandler.show(holdForSecondsString)
                                 onTimerIntent(TimerFullScreenIntent.IconAppear)
                             }
                         }
