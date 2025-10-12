@@ -30,8 +30,8 @@ import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.timer.TimerState
 import com.t2.timerzeerkmp.domain.util.HandleBackPress
 import com.t2.timerzeerkmp.domain.util.LocalUtil
+import com.t2.timerzeerkmp.domain.util.ShareExtension
 import com.t2.timerzeerkmp.domain.util.ToastHandler
-import com.t2.timerzeerkmp.domain.util.shareText
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.FullScreenTimerViewModel.Companion.COUNTDOWN_DONE_DELAY_MS
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.components.LottieLoader
 import com.t2.timerzeerkmp.presentation.main.components.CaptionTextField
@@ -265,7 +265,7 @@ fun TimerStarted(
                                                 .toDisplayString()
                                         )
 
-                                    coroutineContext.shareText(shareText)
+                                    ShareExtension.share(shareText)
                                 }
 
                             }

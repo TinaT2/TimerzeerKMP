@@ -1,15 +1,7 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 package com.t2.timerzeerkmp.domain.util
 
-import kotlin.coroutines.CoroutineContext
-
-
-fun CoroutineContext.shareText(shareText: String) {
-    //todo
-//    val intent = (Intent.ACTION_SEND).apply {
-//        type = "text/plain"
-//        putExtra(Intent.EXTRA_TEXT, shareText)
-//    }
-//
-//    val chooser = Intent.createChooser(intent, "Share Timer")
-//    startActivity(chooser)
+expect object ShareExtension{
+    fun share(shareText: String)
 }
