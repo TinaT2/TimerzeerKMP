@@ -27,6 +27,7 @@ class TimerRepository(
     private val timerController: TimerController
 ) {
     private val _timerState = MutableStateFlow(TimerState())
+
     @NativeCoroutinesState
     val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
 
@@ -89,11 +90,12 @@ class TimerRepository(
         scope.launch {
             delay(1.seconds)
             if (timerInit?.mode != null && timerInit.title != null && timerInit.initTime != null) {
+                val mode = TimerMode.valueOf(timerInit.mode)
                 _timerState.update {
                     it.copy(
-                        mode = TimerMode.valueOf(timerInit.mode),
+                        mode = mode,
                         title = timerInit.title,
-                        initialTime = timerInit.initTime,
+                        initialTime = timerInit.initTime + if (mode == TimerMode.COUNTDOWN) 1000 else 0,
                         isRunning = true,
                         elapsedTime = timerInit.initTime,
                         isCountDownDone = false,
@@ -149,7 +151,7 @@ class TimerRepository(
                     val elapsed = if (_timerState.value.mode == TimerMode.STOPWATCH) {
                         initialMillis + (currentTimeMillis() - start)
                     } else {
-                        start + initialMillis + 1000 - currentTimeMillis()
+                        start + initialMillis - currentTimeMillis()
                     }
                     _timerState.update { it.copy(elapsedTime = elapsed) }
 
