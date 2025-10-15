@@ -53,24 +53,37 @@ public class LiveActivityManager: NSObject, @preconcurrency TimerController {
         Task {
             let now = Date()
             let targetDate = activity.content.state.targetDate
-            remainingSeconds = max(Int64(targetDate.timeIntervalSince(now)), 0)
+            remainingSeconds = Int64(targetDate.timeIntervalSince(now)*1000)
             
-            let frozenState = TimerActivityAttributes.ContentState(targetDate: now)
-            let frozenContent = ActivityContent(state: frozenState, staleDate: nil)
-            await activity.update(frozenContent)
+            await activity.end(
+                ActivityContent(state: activity.content.state, staleDate: nil),
+                dismissalPolicy: .immediate
+            )
+            
             print("⏸ Paused with \(remainingSeconds ?? 0)s remaining")
         }
     }
     
     // MARK: - Resume
-    public func resume() {
-        guard let activity = activity, let remaining = remainingSeconds else { return }
+    public func resume(durationInSeconds: Int64) {
         Task {
-            let newTarget = Date().addingTimeInterval(TimeInterval(remaining))
+            let newTarget = Date().addingTimeInterval(TimeInterval(durationInSeconds)/1000)
             let newState = TimerActivityAttributes.ContentState(targetDate: newTarget)
-            await activity.update(ActivityContent(state: newState, staleDate: nil))
+            let content = ActivityContent(state: newState, staleDate: nil)
+            let attributes = TimerActivityAttributes()
+            
+            do {
+                activity = try Activity<TimerActivityAttributes>.request(
+                    attributes: attributes,
+                    content: content,
+                    pushType: nil
+                )
+                print("✅ Live Activity started successfully.")
+            } catch {
+                print("❌ Error starting activity: \(error.localizedDescription)")
+            }
             remainingSeconds = nil
-            print("▶️ Resumed with \(remaining)s left")
+            print("▶️ Resumed with \(durationInSeconds)s left")
         }
     }
     

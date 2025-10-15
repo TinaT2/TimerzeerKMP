@@ -95,7 +95,7 @@ class TimerRepository(
                     it.copy(
                         mode = mode,
                         title = timerInit.title,
-                        initialTime = timerInit.initTime + if (mode == TimerMode.COUNTDOWN) 1000 else 0,
+                        initialTime = timerInit.initTime ,
                         isRunning = true,
                         elapsedTime = timerInit.initTime,
                         isCountDownDone = false,
@@ -119,6 +119,7 @@ class TimerRepository(
 
         scope.launch {
             val lastElapsed = persistence.getElapsedTime().first() ?: 0L
+            Log.d(TAG, "resumeTimer: $lastElapsed")
             val now = currentTimeMillis()
             _timerState.update {
                 it.copy(
@@ -127,9 +128,8 @@ class TimerRepository(
                     initialTime = lastElapsed
                 )
             }
-
             startTicking()
-            timerController.resume()
+            timerController.resume(if(timerState.value.mode == TimerMode.STOPWATCH) -lastElapsed else lastElapsed)
         }
 
     }
@@ -153,6 +153,7 @@ class TimerRepository(
                     } else {
                         start + initialMillis - currentTimeMillis()
                     }
+                    Log.d(TAG, "timer:$elapsed")
                     _timerState.update { it.copy(elapsedTime = elapsed) }
 
                     if (elapsed < 0L && timerState.value.mode == TimerMode.COUNTDOWN) {

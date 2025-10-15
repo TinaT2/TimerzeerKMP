@@ -25,7 +25,7 @@ actual fun getTimerController(): TimerController =
             })
         }
 
-        override fun resume() {
+        override fun resume(durationInSeconds: Long) {
             ContextCompat.startForegroundService(
                 context,
                 Intent(context, TimerService::class.java).apply {
