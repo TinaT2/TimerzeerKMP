@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
     id("com.rickclephas.kmp.nativecoroutines") version "1.0.0-ALPHA-47"
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -34,6 +35,9 @@ kotlin {
             implementation(libs.koin.androidx.compose)
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.androidx.lifecycle.service)
+            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:34.4.0"))
+            implementation(libs.firebase.analytics)
+            implementation(libs.firebase.messaging)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

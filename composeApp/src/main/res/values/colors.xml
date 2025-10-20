@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base colors -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="gray">#FF757575</color>
+    <color name="light_gray">#FFE0E0E0</color>
+
+    <!-- Accent / Theme colors -->
+    <color name="orange">#FFFF9800</color>   <!-- Primary accent for timer -->
+    <color name="blue">#FF2196F3</color>     <!-- Optional secondary -->
+    <color name="green">#FF4CAF50</color>    <!-- For success states -->
+    <color name="red">#FFF44336</color>      <!-- For stop/error -->
+
+    <!-- Background -->
+    <color name="notification_bg">#FFFFFFFF</color>
+    <color name="notification_border">#FFE0E0E0</color>
+</resources>

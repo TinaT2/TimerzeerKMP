@@ -4,3 +4,8 @@ expect object Log {
     fun d(tag: String, message: String)
     fun e(tag: String, message: String, throwable: Throwable? = null)
 }
+
+object Tags {
+    val APP = "APP"
+    val TOKEN = "Token"
+}

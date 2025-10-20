@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="share_timer">Share Timer</string>
+    <string name="timer_running">Timer Running</string>
+    <string name="your_timer_will_end_soon">Your timer will end soon ⏳</string>
 </resources>
