@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.composeCompiler)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
     id("com.rickclephas.kmp.nativecoroutines") version "1.0.0-ALPHA-47"
+    id("com.google.gms.google-services")
+    alias(libs.plugins.androidx.room)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -54,7 +57,8 @@ kotlin {
             implementation(libs.androidx.datastore.preferences.core)
             implementation(libs.compottie)
             implementation(libs.kmp.nativecoroutines.core)
-
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -91,8 +95,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
+room {
+    schemaDirectory("$projectDir/schemas")
+}
 
 dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
     debugImplementation(compose.uiTooling)
 }
 
