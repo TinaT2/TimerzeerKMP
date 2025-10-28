@@ -17,7 +17,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.data.repository.SettingsRepository
-import com.t2.timerzeerkmp.data.repository.TimerRepository
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.RootTimerFullScreen
 import com.t2.timerzeerkmp.presentation.main.components.SmoothStartUpAnimation
 import com.t2.timerzeerkmp.presentation.main.theme.TimerzeerTheme

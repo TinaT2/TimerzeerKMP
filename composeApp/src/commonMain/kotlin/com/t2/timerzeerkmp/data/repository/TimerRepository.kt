@@ -2,6 +2,8 @@ package com.t2.timerzeerkmp.data.repository
 
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
 import com.t2.timerzeerkmp.app.Route
+import com.t2.timerzeerkmp.data.database.TimerDao
+import com.t2.timerzeerkmp.data.mapper.toTimerEntity
 import com.t2.timerzeerkmp.domain.TimerController
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.domain.timer.TimerIntent
@@ -11,6 +13,7 @@ import com.t2.timerzeerkmp.domain.util.Log
 import com.t2.timerzeerkmp.domain.util.currentTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
@@ -24,7 +27,8 @@ import kotlin.time.Duration.Companion.seconds
 
 class TimerRepository(
     private val persistence: TimerPersistence,
-    private val timerController: TimerController
+    private val timerController: TimerController,
+    private val timerDao: TimerDao
 ) {
     private val _timerState = MutableStateFlow(TimerState())
 
@@ -35,7 +39,7 @@ class TimerRepository(
     val isReady: StateFlow<Boolean> get() = _isReady
 
     private var timerJob: Job? = null
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val TAG = "TimerRepository"
 
@@ -103,6 +107,7 @@ class TimerRepository(
                     )
                 }
             }
+            insertTimer(timerState.value)
             startTicking()
             timerController.start(timerState.value.initialTime ?: 0L)
         }
@@ -165,6 +170,12 @@ class TimerRepository(
                     delay(1.seconds)
                 }
             }
+        }
+    }
+
+    private fun insertTimer(timerState: TimerState) {
+        scope.launch {
+            timerDao.insert(timerState.toTimerEntity())
         }
     }
 }

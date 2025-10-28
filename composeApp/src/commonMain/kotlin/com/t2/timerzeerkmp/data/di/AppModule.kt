@@ -1,5 +1,7 @@
 package com.t2.timerzeerkmp.data.di
 
+import com.t2.timerzeerkmp.data.database.TimerDatabase
+import com.t2.timerzeerkmp.data.database.createTimerDatabase
 import com.t2.timerzeerkmp.data.persistence.createSettingsPersistence
 import com.t2.timerzeerkmp.data.persistence.createTimerPersistence
 import com.t2.timerzeerkmp.data.repository.SettingsRepository
@@ -21,4 +23,6 @@ val coreModule = module {
     singleOf(::SettingsRepository)
     singleOf(::TimerRepository)
     singleOf(::getTimerController)
+    single { createTimerDatabase() }
+    single { get<TimerDatabase>().timerDao() }
 }
