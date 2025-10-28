@@ -14,6 +14,7 @@ import org.koin.core.logger.Level
 class TimezeerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        AppContextHolder.context = this
         ensureNotificationChannel()
         initKoin {
             androidContext(this@TimezeerApplication)
