@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TimerDao{
     @Insert
-    fun insert(timer: TimerEntity)
+    suspend fun insert(timer: TimerEntity)
 
     @Query("SELECT * FROM TimerEntity ORDER BY id DESC")
     fun getAllTimers(): Flow<List<TimerEntity>>
