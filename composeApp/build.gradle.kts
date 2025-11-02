@@ -108,4 +108,3 @@ dependencies {
     add("kspIosArm64", libs.androidx.room.compiler)
     debugImplementation(compose.uiTooling)
 }
-
