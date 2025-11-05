@@ -16,7 +16,3 @@ data class TimerState(
     val errorMessage: String? = null,
     val startEpocMilliSecond:Long? = null
 )
-@Serializable
-enum class TimerMode(val value: StringResource) {
-    STOPWATCH(Res.string.stopwatch), COUNTDOWN(Res.string.countdown)
-}

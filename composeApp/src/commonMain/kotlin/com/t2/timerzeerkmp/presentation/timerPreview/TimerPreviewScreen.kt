@@ -71,6 +71,7 @@ import timerzeerkmp.composeapp.generated.resources.property_1_image_02
 import timerzeerkmp.composeapp.generated.resources.property_1_roller_brush
 import timerzeerkmp.composeapp.generated.resources.seconds
 import timerzeerkmp.composeapp.generated.resources.start
+import timerzeerkmp.composeapp.generated.resources.timer_list
 import timerzeerkmp.composeapp.generated.resources.timer_style
 import timerzeerkmp.composeapp.generated.resources.timezeer
 import timerzeerkmp.composeapp.generated.resources.titleIcon
@@ -82,7 +83,8 @@ val DEFAULT_NAME = Res.string.value_default
 @Composable
 fun TimerScreenRoot(
     viewModel: TimerPreviewViewModel = koinViewModel(),
-    onTimerStarted: (mode: TimerMode?, title: String?, initTime: Long?) -> Unit
+    onTimerStarted: (mode: TimerMode?, title: String?, initTime: Long?) -> Unit,
+    onShowAllTimers: () -> Unit
 ) {
     val timerPreviewState by viewModel.timerPreviewState.collectAsStateWithLifecycle()
     var uiOverlayIntent: UiOverlayIntent by remember { mutableStateOf(UiOverlayIntent.None) }
@@ -123,7 +125,8 @@ fun TimerScreenRoot(
                 onStyleChange = { uiOverlayIntent = UiOverlayIntent.TimerStyle },
                 onBackgroundThemeChange = { uiOverlayIntent = UiOverlayIntent.BackgroundTheme },
                 onEndingAnimationChange = { uiOverlayIntent = UiOverlayIntent.EndingAnimation },
-                onShowDatePicker = { uiOverlayIntent = UiOverlayIntent.DatePicker }
+                onShowDatePicker = { uiOverlayIntent = UiOverlayIntent.DatePicker },
+                onShowAllTimers = onShowAllTimers
             )
 
             UIOverlays(
@@ -210,7 +213,8 @@ private fun TimerScreen(
     onStyleChange: () -> Unit = {},
     onBackgroundThemeChange: () -> Unit = {},
     onEndingAnimationChange: () -> Unit = {},
-    onShowDatePicker: () -> Unit = {}
+    onShowDatePicker: () -> Unit = {},
+    onShowAllTimers: () -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
     val customGraphicIds = LocalCustomGraphicIds.current
@@ -314,6 +318,15 @@ private fun TimerScreen(
 
                     Spacer(Modifier.height(SizeXXXL))
 
+                    TextOptionButton(
+                        text = stringResource(Res.string.timer_list),
+                        leadingIcon = Res.drawable.property_1_clock_stopwatch,
+                        trailingIcon = Res.drawable.property_1_chevron_right,
+                        enabled = true
+                    ) {
+                        onShowAllTimers()
+                    }
+                    Spacer(Modifier.height(SizeXS))
                     TextOptionButton(
                         text = stringResource(customGraphicIds.fontId),
                         leadingIcon = Res.drawable.property_1_roller_brush,

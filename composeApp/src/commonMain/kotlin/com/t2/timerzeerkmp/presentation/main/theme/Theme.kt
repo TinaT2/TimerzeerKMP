@@ -1,11 +1,23 @@
 package com.t2.timerzeerkmp.presentation.main.theme
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.tina.timerzeer.core.presentation.theme.BgPrimary
 import com.tina.timerzeer.core.presentation.theme.BgPrimaryDark
@@ -17,6 +29,7 @@ import com.tina.timerzeer.core.presentation.theme.Primary
 import com.tina.timerzeer.core.presentation.theme.PrimaryDark
 import com.tina.timerzeer.core.presentation.theme.Secondary
 import com.tina.timerzeer.core.presentation.theme.SecondaryDark
+import com.tina.timerzeer.core.presentation.theme.SizeXL
 import com.tina.timerzeer.core.presentation.theme.Tertiary
 import com.tina.timerzeer.core.presentation.theme.TertiaryDark
 import com.tina.timerzeer.core.presentation.theme.TextPrimary
@@ -88,7 +101,9 @@ fun TimerzeerTheme(
     )
 
     val typoGraphy =
-        buildTypography(fontStyles()[fontId ?: DefaultLocalCustomGraphicIds.fontId] ?: fontManrope())
+        buildTypography(
+            fontStyles()[fontId ?: DefaultLocalCustomGraphicIds.fontId] ?: fontManrope()
+        )
 
     CompositionLocalProvider(
         LocalCustomColors provides customColors,
@@ -100,5 +115,48 @@ fun TimerzeerTheme(
             content = content
         )
     }
+}
 
+@Composable
+fun ColorfulScaffold(
+    onWholeScreenClicked: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    topBar: @Composable () -> Unit = {},
+    bottomBar: @Composable () -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
+    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    containerColor: Color = MaterialTheme.colorScheme.background,
+    contentColor: Color = contentColorFor(containerColor),
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val customGraphicIds = LocalCustomGraphicIds.current
+    val customColors = LocalCustomColors.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable {
+                onWholeScreenClicked()
+            }) {
+
+        backgrounds()[customGraphicIds.backgroundId]?.invoke()
+
+        Scaffold(
+            modifier = modifier
+                .background(customColors.mainBackground)
+                .padding(top = SizeXL),
+            containerColor = customColors.mainBackground,
+            topBar = topBar,
+            bottomBar = bottomBar,
+            snackbarHost = snackbarHost,
+            floatingActionButton = floatingActionButton,
+            floatingActionButtonPosition = floatingActionButtonPosition,
+            contentWindowInsets = contentWindowInsets,
+            contentColor = contentColor
+        ) { paddingValues ->
+            content.invoke(paddingValues)
+        }
+    }
 }

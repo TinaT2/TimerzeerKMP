@@ -11,6 +11,7 @@ import com.t2.timerzeerkmp.domain.persistence.SettingsPersistence
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.FullScreenTimerViewModel
 import com.t2.timerzeerkmp.presentation.timerPreview.TimerPreviewViewModel
+import com.t2.timerzeerkmp.presentation.timerlist.TimerListViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -25,4 +26,5 @@ val coreModule = module {
     singleOf(::getTimerController)
     single { createTimerDatabase() }
     single { get<TimerDatabase>().timerDao() }
+    viewModelOf(::TimerListViewModel)
 }
