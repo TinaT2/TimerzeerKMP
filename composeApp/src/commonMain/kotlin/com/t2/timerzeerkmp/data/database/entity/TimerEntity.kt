@@ -1,4 +1,4 @@
-package com.t2.timerzeerkmp.data.database
+package com.t2.timerzeerkmp.data.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

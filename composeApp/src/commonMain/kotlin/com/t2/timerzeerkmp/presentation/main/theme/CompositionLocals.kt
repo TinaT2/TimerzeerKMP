@@ -5,8 +5,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import com.t2.timerzeerkmp.presentation.timerPreview.DEFAULT_NAME
 import org.jetbrains.compose.resources.StringResource
-import timerzeerkmp.composeapp.generated.resources.Res
-import timerzeerkmp.composeapp.generated.resources.value_default
 
 
 @Immutable
@@ -15,7 +13,9 @@ data class CustomColors(
     val mainBackground: Color,
     val textColorEnabled: Color,
     val textColorDisabled: Color,
-    val border: Color
+    val border: Color,
+    val buttonBackgroundEnabled:Color,
+    val buttonBackgroundDisabled:Color
 )
 
 val LocalCustomColors = staticCompositionLocalOf {
@@ -25,6 +25,8 @@ val LocalCustomColors = staticCompositionLocalOf {
         textColorEnabled = Color.Black,
         textColorDisabled = Color.DarkGray,
         border = Color.DarkGray,
+        buttonBackgroundEnabled = Color.Blue,
+        buttonBackgroundDisabled = Color.Transparent
     )
 }
 

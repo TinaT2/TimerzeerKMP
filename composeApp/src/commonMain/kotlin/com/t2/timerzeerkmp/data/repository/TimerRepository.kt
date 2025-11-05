@@ -2,8 +2,9 @@ package com.t2.timerzeerkmp.data.repository
 
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
 import com.t2.timerzeerkmp.app.Route
-import com.t2.timerzeerkmp.data.database.TimerDao
+import com.t2.timerzeerkmp.data.database.dao.TimerDao
 import com.t2.timerzeerkmp.data.mapper.toTimerEntity
+import com.t2.timerzeerkmp.data.mapper.toTimerPresenter
 import com.t2.timerzeerkmp.domain.TimerController
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.domain.timer.TimerIntent
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -85,7 +87,11 @@ class TimerRepository(
 
             TimerIntent.Pause -> pauseTimer()
             TimerIntent.Resume -> resumeTimer()
-            TimerIntent.Stop -> stopTimer()
+            TimerIntent.Stop -> {
+                insertTimer(timerState.value.copy(isRunning = false))
+                stopTimer()
+            }
+
             else -> {}
         }
     }
@@ -99,7 +105,7 @@ class TimerRepository(
                     it.copy(
                         mode = mode,
                         title = timerInit.title,
-                        initialTime = timerInit.initTime ,
+                        initialTime = timerInit.initTime,
                         isRunning = true,
                         elapsedTime = timerInit.initTime,
                         isCountDownDone = false,
@@ -107,7 +113,6 @@ class TimerRepository(
                     )
                 }
             }
-            insertTimer(timerState.value)
             startTicking()
             timerController.start(timerState.value.initialTime ?: 0L)
         }
@@ -134,7 +139,7 @@ class TimerRepository(
                 )
             }
             startTicking()
-            timerController.resume(if(timerState.value.mode == TimerMode.STOPWATCH) -lastElapsed else lastElapsed)
+            timerController.resume(if (timerState.value.mode == TimerMode.STOPWATCH) -lastElapsed else lastElapsed)
         }
 
     }
@@ -178,4 +183,8 @@ class TimerRepository(
             timerDao.insert(timerState.toTimerEntity())
         }
     }
+
+    fun getAllTimers() =
+        timerDao.getAllTimers().map { it.map { it.toTimerPresenter() } }
+
 }
