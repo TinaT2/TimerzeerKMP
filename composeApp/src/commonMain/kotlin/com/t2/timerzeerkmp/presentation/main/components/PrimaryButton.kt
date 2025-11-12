@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.t2.timerzeerkmp.presentation.main.theme.LocalCustomColors
 import com.tina.timerzeer.core.presentation.theme.RoundedCornerShapeNumber
 import com.tina.timerzeer.core.presentation.theme.SizeXS
 import org.jetbrains.compose.resources.DrawableResource
@@ -34,9 +35,10 @@ fun PrimaryButton(
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
+    val customColors = LocalCustomColors.current
     val colors = ButtonDefaults.buttonColors(
-        containerColor = colorScheme.primary,
-        disabledContainerColor = colorScheme.tertiary
+        containerColor = customColors.buttonBackgroundEnabled,
+        disabledContainerColor = customColors.buttonBackgroundDisabled
     )
 
     Button(

@@ -19,24 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.tina.timerzeer.core.presentation.theme.BgPrimary
-import com.tina.timerzeer.core.presentation.theme.BgPrimaryDark
-import com.tina.timerzeer.core.presentation.theme.Error
-import com.tina.timerzeer.core.presentation.theme.ErrorDark
-import com.tina.timerzeer.core.presentation.theme.OnColorWhite
-import com.tina.timerzeer.core.presentation.theme.OnColorWhiteDark
-import com.tina.timerzeer.core.presentation.theme.Primary
-import com.tina.timerzeer.core.presentation.theme.PrimaryDark
-import com.tina.timerzeer.core.presentation.theme.Secondary
-import com.tina.timerzeer.core.presentation.theme.SecondaryDark
 import com.tina.timerzeer.core.presentation.theme.SizeXL
-import com.tina.timerzeer.core.presentation.theme.Tertiary
-import com.tina.timerzeer.core.presentation.theme.TertiaryDark
-import com.tina.timerzeer.core.presentation.theme.TextPrimary
-import com.tina.timerzeer.core.presentation.theme.TextPrimaryDark
-import com.tina.timerzeer.core.presentation.theme.TextSecondary
-import com.tina.timerzeer.core.presentation.theme.TextSecondaryDark
-import com.tina.timerzeer.core.presentation.theme.TextSecondaryTransparent
 import org.jetbrains.compose.resources.StringResource
 
 val LightColorScheme = lightColorScheme(
@@ -82,7 +65,9 @@ fun TimerzeerTheme(
             mainBackground = Color.Transparent,
             textColorEnabled = colorScheme.onPrimary,
             textColorDisabled = TextSecondary,
-            border = MaterialTheme.colorScheme.surface
+            border = MaterialTheme.colorScheme.surface,
+            buttonBackgroundEnabled = colorScheme.primary,
+            buttonBackgroundDisabled = TextSecondaryTransparent
         )
     } else {
         CustomColors(
@@ -90,7 +75,9 @@ fun TimerzeerTheme(
             textColorEnabled = colorScheme.onPrimary,
             mainBackground = colorScheme.background,
             textColorDisabled = colorScheme.onSecondary,
-            border = colorScheme.tertiary
+            border = colorScheme.tertiary,
+            buttonBackgroundEnabled = colorScheme.primary,
+            buttonBackgroundDisabled = colorScheme.tertiary
         )
     }
 
