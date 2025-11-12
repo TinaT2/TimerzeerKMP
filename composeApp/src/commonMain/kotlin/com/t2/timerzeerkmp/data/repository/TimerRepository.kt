@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -88,7 +87,11 @@ class TimerRepository(
 
             TimerIntent.Pause -> pauseTimer()
             TimerIntent.Resume -> resumeTimer()
-            TimerIntent.Stop -> stopTimer()
+            TimerIntent.Stop -> {
+                insertTimer(timerState.value.copy(isRunning = false))
+                stopTimer()
+            }
+
             else -> {}
         }
     }
@@ -110,7 +113,6 @@ class TimerRepository(
                     )
                 }
             }
-            insertTimer(timerState.value)
             startTicking()
             timerController.start(timerState.value.initialTime ?: 0L)
         }
@@ -182,7 +184,7 @@ class TimerRepository(
         }
     }
 
-    suspend fun getAllTimers() =
+    fun getAllTimers() =
         timerDao.getAllTimers().map { it.map { it.toTimerPresenter() } }
 
 }

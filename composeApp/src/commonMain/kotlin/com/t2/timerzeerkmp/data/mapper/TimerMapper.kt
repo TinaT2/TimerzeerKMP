@@ -10,7 +10,7 @@ fun TimerState.toTimerEntity(): TimerEntity {
         title = title,
         mode = mode,
         startTime = startEpocMilliSecond ?: 0L,
-        duration = (initialTime ?: 0L).milliseconds,
+        duration = elapsedTime.milliseconds,
         isRunning = isRunning
     )
 }

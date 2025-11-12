@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.t2.timerzeerkmp.data.mapper.toDayMonthYearString
 import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.timer.TimerPresentation
 import com.t2.timerzeerkmp.presentation.main.theme.ColorfulScaffold
@@ -35,6 +36,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import timerzeerkmp.composeapp.generated.resources.Res
 import timerzeerkmp.composeapp.generated.resources.property_1_calendar
 import timerzeerkmp.composeapp.generated.resources.property_1_clock_stopwatch
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -77,11 +79,8 @@ fun TimerListScreen(
 
 @Composable
 fun HistoryItem(timer: TimerPresentation) {
-    val isRunning = timer.isRunning
-    val cardColor =
-        if (isRunning) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
-    val textColor =
-        if (isRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    val cardColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
+    val textColor = MaterialTheme.colorScheme.primary
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -100,14 +99,14 @@ fun HistoryItem(timer: TimerPresentation) {
                     fontSize = 18.sp
                 )
                 Text(
-                    text = if (isRunning) "Running..." else "Oct 15, 2023", // Replace with actual date
+                    text = timer.startTime.toDayMonthYearString(),
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = timer.duration.toString(),
+                    text = timer.duration.inWholeSeconds.seconds.toString(),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 20.sp,
                     color = textColor
