@@ -1,15 +1,13 @@
 package com.t2.timerzeerkmp.data.database
 
+import android.content.Context
 import androidx.room.Room
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import com.t2.timerzeerkmp.AppContextHolder
+import androidx.room.RoomDatabase
 
-actual fun createTimerDatabase(): TimerDatabase {
-    val context = AppContextHolder.context
+fun getDatabaseBuilder(context: Context):  RoomDatabase.Builder<TimerDatabase> {
     val dbFile = context.getDatabasePath("timer.db")
     return Room.databaseBuilder<TimerDatabase>(
         context = context.applicationContext,
         name = dbFile.absolutePath
-    ).setDriver(BundledSQLiteDriver())
-        .build()
+    )
 }

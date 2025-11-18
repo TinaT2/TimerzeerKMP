@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.composeCompiler)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
     id("com.rickclephas.kmp.nativecoroutines") version "1.0.0-ALPHA-47"
-    id("com.google.gms.google-services")
     alias(libs.plugins.androidx.room)
     alias(libs.plugins.ksp)
 }
@@ -26,6 +25,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            linkerOpts.add("-lsqlite3")
         }
     }
 

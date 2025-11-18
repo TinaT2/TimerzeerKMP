@@ -1,20 +1,17 @@
 package com.t2.timerzeerkmp.data.database
 
 import androidx.room.Room
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import androidx.room.RoomDatabase
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
-actual fun createTimerDatabase(): TimerDatabase {
+fun getDatabaseBuilder(): RoomDatabase.Builder<TimerDatabase> {
     val dbFile = documentDirectory() + "/timer.db"
     return Room.databaseBuilder<TimerDatabase>(
         name = dbFile,
-        factory = { TimerDatabase::class.instantiateImpl() } // This was the missing line
     )
-        .setDriver(BundledSQLiteDriver())
-        .build()
 }
 
 @OptIn(ExperimentalForeignApi::class)
