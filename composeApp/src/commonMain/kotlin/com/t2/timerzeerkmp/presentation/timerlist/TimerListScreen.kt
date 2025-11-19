@@ -17,6 +17,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -30,10 +31,12 @@ import androidx.compose.ui.unit.sp
 import com.t2.timerzeerkmp.data.mapper.toDayMonthYearString
 import com.t2.timerzeerkmp.domain.timer.TimerMode
 import com.t2.timerzeerkmp.domain.timer.TimerPresentation
+import com.t2.timerzeerkmp.presentation.main.components.ThemedPreview
 import com.t2.timerzeerkmp.presentation.main.theme.ColorfulScaffold
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import timerzeerkmp.composeapp.generated.resources.Res
+import timerzeerkmp.composeapp.generated.resources.arrow_back_24dp
 import timerzeerkmp.composeapp.generated.resources.property_1_calendar
 import timerzeerkmp.composeapp.generated.resources.property_1_clock_stopwatch
 import kotlin.time.Duration.Companion.seconds
@@ -44,8 +47,9 @@ import kotlin.time.toDuration
 @Composable
 fun TimerListScreen(
     state: TimerListState,
-    onIntent: (TimerListIntent) -> Unit
+    onIntent: (TimerListIntent) -> Unit,
 ) {
+    val textColor = MaterialTheme.colorScheme.primary
     ColorfulScaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -54,7 +58,17 @@ fun TimerListScreen(
                         "History",
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
+                        color = textColor
                     )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { onIntent(TimerListIntent.OnBack) }) {
+                        Icon(
+                            painter = painterResource(Res.drawable.arrow_back_24dp),
+                            contentDescription = "Back",
+                            tint = textColor
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Transparent
@@ -136,43 +150,45 @@ fun HistoryItem(timer: TimerPresentation) {
 @Preview
 @Composable
 fun TimerListScreenPreview() {
-    val timers = listOf(
-        TimerPresentation(
-            2,
-            "Presentation Prep",
-            TimerMode.COUNTDOWN,
-            0L,
-            5.toDuration(DurationUnit.SECONDS),
-            false
-        ),
-        TimerPresentation(
-            3,
-            "Presentation Prep",
-            TimerMode.COUNTDOWN,
-            0L,
-            10L.toDuration(DurationUnit.SECONDS),
-            false
-        ),
-        TimerPresentation(
-            4,
-            "Presentation Prep",
-            TimerMode.STOPWATCH,
-            0L,
-            7.toDuration(DurationUnit.SECONDS),
-            false
-        ),
-        TimerPresentation(
-            5,
-            "Presentation Prep",
-            TimerMode.COUNTDOWN,
-            0L,
-            15L.toDuration(DurationUnit.SECONDS),
-            false
-        ),
-    )
-    val state = TimerListState(timers = timers)
-    TimerListScreen(
-        state = state,
-        onIntent = {}
-    )
+    ThemedPreview {
+        val timers = listOf(
+            TimerPresentation(
+                2,
+                "Presentation Prep",
+                TimerMode.COUNTDOWN,
+                0L,
+                5.toDuration(DurationUnit.SECONDS),
+                false
+            ),
+            TimerPresentation(
+                3,
+                "Presentation Prep",
+                TimerMode.COUNTDOWN,
+                0L,
+                10L.toDuration(DurationUnit.SECONDS),
+                false
+            ),
+            TimerPresentation(
+                4,
+                "Presentation Prep",
+                TimerMode.STOPWATCH,
+                0L,
+                7.toDuration(DurationUnit.SECONDS),
+                false
+            ),
+            TimerPresentation(
+                5,
+                "Presentation Prep",
+                TimerMode.COUNTDOWN,
+                0L,
+                15L.toDuration(DurationUnit.SECONDS),
+                false
+            ),
+        )
+        val state = TimerListState(timers = timers)
+        TimerListScreen(
+            state = state,
+            onIntent = {}
+        )
+    }
 }

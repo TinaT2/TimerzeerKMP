@@ -26,6 +26,7 @@ import com.t2.timerzeerkmp.presentation.main.theme.backgrounds
 import com.t2.timerzeerkmp.presentation.main.theme.endingAnimations
 import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
 import com.t2.timerzeerkmp.presentation.timerPreview.TimerScreenRoot
+import com.t2.timerzeerkmp.presentation.timerlist.TimerListEffect
 import com.t2.timerzeerkmp.presentation.timerlist.TimerListScreen
 import com.t2.timerzeerkmp.presentation.timerlist.TimerListViewModel
 import kotlinx.coroutines.flow.combine
@@ -107,6 +108,16 @@ fun AppNavHost() {
             composable<Route.TimerList> {
                 val viewModel: TimerListViewModel = koinInject()
                 val state by viewModel.state.collectAsState()
+                LaunchedEffect(key1 = viewModel.effect) {
+                    viewModel.effect.collect { effect ->
+                        when (effect) {
+                            is TimerListEffect.OnBackPressed -> {
+                               navController.navigateUp()
+                            }
+                        }
+                    }
+                }
+
                 TimerListScreen(
                     state = state,
                     onIntent = viewModel::onIntent

@@ -2,12 +2,11 @@ package com.t2.timerzeerkmp.presentation.timerlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.t2.timerzeerkmp.data.database.dao.TimerDao
 import com.t2.timerzeerkmp.data.repository.TimerRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class TimerListViewModel(
@@ -17,6 +16,9 @@ class TimerListViewModel(
     private val _state = MutableStateFlow(TimerListState())
     val state = _state.asStateFlow()
 
+    val _effect = MutableSharedFlow<TimerListEffect>()
+    val effect = _effect.asSharedFlow()
+
     init {
         loadTimers()
     }
@@ -24,6 +26,11 @@ class TimerListViewModel(
     fun onIntent(intent: TimerListIntent) {
         when (intent) {
             TimerListIntent.LoadTimers -> loadTimers()
+            TimerListIntent.OnBack -> {
+                viewModelScope.launch {
+                    _effect.emit(TimerListEffect.OnBackPressed)
+                }
+            }
         }
     }
 
