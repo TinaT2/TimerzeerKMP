@@ -5,8 +5,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
-    id("com.rickclephas.kmp.nativecoroutines") version "1.0.0-ALPHA-47"
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.kmpNativecoroutines)
     alias(libs.plugins.androidx.room)
     alias(libs.plugins.ksp)
 }
@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.kmp.nativecoroutines.core)
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
+            api(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

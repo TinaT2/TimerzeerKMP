@@ -20,32 +20,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.t2.timerzeerkmp.domain.util.currentTimeMillis
+import com.t2.timerzeerkmp.domain.util.startOfDayInMillis
 import com.tina.timerzeer.core.presentation.theme.SizeM
 import com.tina.timerzeer.core.presentation.theme.SizeXL
 import com.tina.timerzeer.core.presentation.theme.SizeXXL
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import timerzeerkmp.composeapp.generated.resources.Res
 import timerzeerkmp.composeapp.generated.resources.cancel
 import timerzeerkmp.composeapp.generated.resources.confirm
 import timerzeerkmp.composeapp.generated.resources.property_1_calendar
 import timerzeerkmp.composeapp.generated.resources.set_date
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun StyledDatePicker(onDateSelected: (Long) -> Unit, onDismiss: () -> Unit) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = currentTimeMillis(),
         selectableDates = object : SelectableDates {
-            //todo
-//            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-//
-//                return utcTimeMillis >= currentTimeMillis().startOfDayInMillis()
-//            }
-//
-//            override fun isSelectableYear(year: Int): Boolean {
-//                return year >= Calendar.getInstance().get(Calendar.YEAR)
-//            }
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis >= Clock.System.now().toEpochMilliseconds().startOfDayInMillis()
+            }
+
+            override fun isSelectableYear(year: Int): Boolean {
+                val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
+                return year >= currentYear
+            }
         })
 
     val datePickerColors = DatePickerDefaults.colors(

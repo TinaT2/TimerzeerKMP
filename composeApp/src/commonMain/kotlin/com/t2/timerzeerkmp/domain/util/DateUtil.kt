@@ -1,12 +1,16 @@
 package com.t2.timerzeerkmp.domain.util
 
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
-//fun Long.startOfDayInMillis(): Long {
-//    val calendar = Calendar.getInstance()
-//    calendar.timeInMillis = this
-//    calendar.set(Calendar.HOUR_OF_DAY, 0)
-//    calendar.set(Calendar.MINUTE, 0)
-//    calendar.set(Calendar.SECOND, 0)
-//    calendar.set(Calendar.MILLISECOND, 0)
-//    return calendar.timeInMillis
-//}
+
+@OptIn(ExperimentalTime::class)
+fun Long.startOfDayInMillis(): Long {
+    val instant = Instant.fromEpochMilliseconds(this)
+    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    val startOfDayInstant = localDateTime.date.atStartOfDayIn(TimeZone.currentSystemDefault())
+    return startOfDayInstant.toEpochMilliseconds()
+}
