@@ -1,5 +1,8 @@
 package com.t2.timerzeerkmp.data.di
 
+import androidx.room.RoomDatabase
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.t2.timerzeerkmp.data.database.TimerDatabase
 import com.t2.timerzeerkmp.data.persistence.createSettingsPersistence
 import com.t2.timerzeerkmp.data.persistence.createTimerPersistence
 import com.t2.timerzeerkmp.data.repository.SettingsRepository
@@ -9,6 +12,9 @@ import com.t2.timerzeerkmp.domain.persistence.SettingsPersistence
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.FullScreenTimerViewModel
 import com.t2.timerzeerkmp.presentation.timerPreview.TimerPreviewViewModel
+import com.t2.timerzeerkmp.presentation.timerlist.TimerListViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -21,4 +27,10 @@ val coreModule = module {
     singleOf(::SettingsRepository)
     singleOf(::TimerRepository)
     singleOf(::getTimerController)
+    single {
+        get<RoomDatabase.Builder<TimerDatabase>>().setDriver(BundledSQLiteDriver())
+            .setQueryCoroutineContext(Dispatchers.IO).build()
+    }
+    single { get<TimerDatabase>().timerDao() }
+    viewModelOf(::TimerListViewModel)
 }

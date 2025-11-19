@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,7 +18,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.t2.timerzeerkmp.app.Route
 import com.t2.timerzeerkmp.data.repository.SettingsRepository
-import com.t2.timerzeerkmp.data.repository.TimerRepository
 import com.t2.timerzeerkmp.presentation.fullScreenTimer.RootTimerFullScreen
 import com.t2.timerzeerkmp.presentation.main.components.SmoothStartUpAnimation
 import com.t2.timerzeerkmp.presentation.main.theme.TimerzeerTheme
@@ -26,6 +26,9 @@ import com.t2.timerzeerkmp.presentation.main.theme.backgrounds
 import com.t2.timerzeerkmp.presentation.main.theme.endingAnimations
 import com.t2.timerzeerkmp.presentation.main.theme.fontStyles
 import com.t2.timerzeerkmp.presentation.timerPreview.TimerScreenRoot
+import com.t2.timerzeerkmp.presentation.timerlist.TimerListEffect
+import com.t2.timerzeerkmp.presentation.timerlist.TimerListScreen
+import com.t2.timerzeerkmp.presentation.timerlist.TimerListViewModel
 import kotlinx.coroutines.flow.combine
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -84,9 +87,14 @@ fun AppNavHost() {
                 enterTransition = { fadeIn(animationSpec = tween(durationMillis = (1000))) },
                 exitTransition = { fadeOut(animationSpec = tween(durationMillis = (1000))) }
             ) {
-                TimerScreenRoot { mode, title, initTime ->
-                    navController.navigate(Route.TimerFullScreen(mode?.name, title, initTime))
-                }
+                TimerScreenRoot(
+                    onTimerStarted = { mode, title, initTime ->
+                        navController.navigate(Route.TimerFullScreen(mode?.name, title, initTime))
+                    },
+                    onShowAllTimers = {
+                        navController.navigate(Route.TimerList)
+                    }
+                )
             }
             composable<Route.TimerFullScreen>(
                 enterTransition = { fadeIn(animationSpec = tween(durationMillis = (1000))) },
@@ -96,6 +104,24 @@ fun AppNavHost() {
                 RootTimerFullScreen(timerInitiate) {
                     navController.navigateUp()
                 }
+            }
+            composable<Route.TimerList> {
+                val viewModel: TimerListViewModel = koinInject()
+                val state by viewModel.state.collectAsState()
+                LaunchedEffect(key1 = viewModel.effect) {
+                    viewModel.effect.collect { effect ->
+                        when (effect) {
+                            is TimerListEffect.OnBackPressed -> {
+                               navController.navigateUp()
+                            }
+                        }
+                    }
+                }
+
+                TimerListScreen(
+                    state = state,
+                    onIntent = viewModel::onIntent
+                )
             }
         }
     }

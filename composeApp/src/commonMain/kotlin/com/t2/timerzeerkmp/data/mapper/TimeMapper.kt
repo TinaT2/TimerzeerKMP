@@ -1,9 +1,13 @@
 package com.t2.timerzeerkmp.data.mapper
 
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 data class TimeComponents(
     val days: Long,
@@ -31,6 +35,19 @@ fun TimeComponents.toDisplayString(): String {
         append("$seconds second${if (seconds > 1) "s" else ""}")
     }.trim().trimEnd(',')
 }
+
+@OptIn(ExperimentalTime::class)
+fun Long.toDayMonthYearString(): String {
+    val instant = Instant.fromEpochMilliseconds(this)
+    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+    val day = localDateTime.day
+    val month = localDateTime.month.name.lowercase().replaceFirstChar { it.uppercase() }
+    val year = localDateTime.year
+
+    return "$day $month $year"
+}
+
 
 
 fun Long.plusDay(): Long {

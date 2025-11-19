@@ -2,6 +2,9 @@ package com.t2.timerzeerkmp.data.repository
 
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
 import com.t2.timerzeerkmp.app.Route
+import com.t2.timerzeerkmp.data.database.dao.TimerDao
+import com.t2.timerzeerkmp.data.mapper.toTimerEntity
+import com.t2.timerzeerkmp.data.mapper.toTimerPresenter
 import com.t2.timerzeerkmp.domain.TimerController
 import com.t2.timerzeerkmp.domain.persistence.TimerPersistence
 import com.t2.timerzeerkmp.domain.timer.TimerIntent
@@ -11,6 +14,7 @@ import com.t2.timerzeerkmp.domain.util.Log
 import com.t2.timerzeerkmp.domain.util.currentTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
@@ -18,13 +22,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
 class TimerRepository(
     private val persistence: TimerPersistence,
-    private val timerController: TimerController
+    private val timerController: TimerController,
+    private val timerDao: TimerDao
 ) {
     private val _timerState = MutableStateFlow(TimerState())
 
@@ -35,7 +41,7 @@ class TimerRepository(
     val isReady: StateFlow<Boolean> get() = _isReady
 
     private var timerJob: Job? = null
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val TAG = "TimerRepository"
 
@@ -81,7 +87,11 @@ class TimerRepository(
 
             TimerIntent.Pause -> pauseTimer()
             TimerIntent.Resume -> resumeTimer()
-            TimerIntent.Stop -> stopTimer()
+            TimerIntent.Stop -> {
+                insertTimer(timerState.value.copy(isRunning = false))
+                stopTimer()
+            }
+
             else -> {}
         }
     }
@@ -95,7 +105,7 @@ class TimerRepository(
                     it.copy(
                         mode = mode,
                         title = timerInit.title,
-                        initialTime = timerInit.initTime ,
+                        initialTime = timerInit.initTime,
                         isRunning = true,
                         elapsedTime = timerInit.initTime,
                         isCountDownDone = false,
@@ -129,7 +139,7 @@ class TimerRepository(
                 )
             }
             startTicking()
-            timerController.resume(if(timerState.value.mode == TimerMode.STOPWATCH) -lastElapsed else lastElapsed)
+            timerController.resume(if (timerState.value.mode == TimerMode.STOPWATCH) -lastElapsed else lastElapsed)
         }
 
     }
@@ -167,4 +177,14 @@ class TimerRepository(
             }
         }
     }
+
+    private fun insertTimer(timerState: TimerState) {
+        scope.launch {
+            timerDao.insert(timerState.toTimerEntity())
+        }
+    }
+
+    fun getAllTimers() =
+        timerDao.getAllTimers().map { it.map { it.toTimerPresenter() } }
+
 }
